@@ -4,6 +4,6 @@
   "description": "AI-powered mystery fiction plot analyzer — built by a novelist who codes",
   "private": true,
   "engines": {
-    "node": "18.x"
+    "node": "24.x"
   }
 }
