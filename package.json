@@ -1,0 +1,9 @@
+{
+  "name": "mystery-plot-analyzer",
+  "version": "1.0.0",
+  "description": "AI-powered mystery fiction plot analyzer — built by a novelist who codes",
+  "private": true,
+  "engines": {
+    "node": "18.x"
+  }
+}

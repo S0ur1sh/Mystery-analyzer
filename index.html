@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pattern Zero Lab — Mystery Plot Analyzer</title>
+  <meta name="description" content="AI-powered forensic analysis for mystery and thriller fiction. Paste a chapter and get a breakdown of plot holes, character consistency, tension, and pacing." />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f8f7f5;
+      --surface: #ffffff;
+      --surface-muted: #f1f0ee;
+      --border: #e4e2de;
+      --border-strong: #ccc9c3;
+      --text-primary: #1a1917;
+      --text-secondary: #5c5a56;
+      --text-muted: #9c9a96;
+      --accent: #4f3ff0;
+      --accent-bg: #eeecff;
+      --accent-text: #3228b5;
+      --red: #c0392b;
+      --red-bg: #fdf0ef;
+      --red-text: #9b2b20;
+      --green: #1a7f4b;
+      --green-bg: #edf7f1;
+      --green-text: #155e38;
+      --amber: #b45309;
+      --amber-bg: #fef9ec;
+      --amber-text: #92420a;
+      --blue: #1d5fa8;
+      --blue-bg: #eef4fd;
+      --blue-text: #174d8f;
+      --purple: #6b3fbd;
+      --purple-bg: #f4effe;
+      --purple-text: #542f9c;
+      --radius: 8px;
+      --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #141312;
+        --surface: #1e1d1b;
+        --surface-muted: #252422;
+        --border: #2e2c29;
+        --border-strong: #3d3b37;
+        --text-primary: #f0ede8;
+        --text-secondary: #a09d98;
+        --text-muted: #6b6864;
+        --accent: #7b6ef6;
+        --accent-bg: #1e1a3f;
+        --accent-text: #a89ff9;
+        --red: #e87060;
+        --red-bg: #2a1714;
+        --red-text: #f0897c;
+        --green: #3dba72;
+        --green-bg: #0f2419;
+        --green-text: #5dcf8a;
+        --amber: #e8a535;
+        --amber-bg: #271c0a;
+        --amber-text: #f0bc5e;
+        --blue: #5b9de0;
+        --blue-bg: #0d1e33;
+        --blue-text: #79b4f0;
+        --purple: #a07ef0;
+        --purple-bg: #1c1030;
+        --purple-text: #c09cf8;
+      }
+    }
+
+    html { font-size: 16px; -webkit-font-smoothing: antialiased; }
+
+    body {
+      background: var(--bg);
+      color: var(--text-primary);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    .page-wrap {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 3rem 1.5rem 6rem;
+    }
+
+    /* ── Header ── */
+    .site-header { margin-bottom: 3rem; }
+    .eyebrow {
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--accent);
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+    .site-title {
+      font-size: 32px;
+      font-weight: 600;
+      color: var(--text-primary);
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+      margin-bottom: 10px;
+    }
+    .site-desc {
+      font-size: 16px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      max-width: 520px;
+    }
+
+    /* ── Divider ── */
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 2rem 0;
+    }
+
+    /* ── Input area ── */
+    .input-label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    #word-count {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-variant-numeric: tabular-nums;
+    }
+    textarea {
+      width: 100%;
+      min-height: 240px;
+      resize: vertical;
+      padding: 14px 16px;
+      font-size: 15px;
+      line-height: 1.7;
+      font-family: inherit;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text-primary);
+      transition: border-color 0.15s, box-shadow 0.15s;
+      box-shadow: var(--shadow);
+    }
+    textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-bg);
+    }
+    textarea::placeholder { color: var(--text-muted); }
+    .input-hint {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 6px;
+    }
+
+    /* ── Controls ── */
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 14px;
+      flex-wrap: wrap;
+    }
+    .btn-analyze {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 22px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.1s;
+      font-family: inherit;
+    }
+    .btn-analyze:hover:not(:disabled) { opacity: 0.88; }
+    .btn-analyze:active:not(:disabled) { transform: scale(0.98); }
+    .btn-analyze:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-clear {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 16px;
+      background: transparent;
+      color: var(--text-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 14px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background 0.15s;
+    }
+    .btn-clear:hover { background: var(--surface-muted); }
+    .status-msg {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-left: 4px;
+    }
+
+    /* ── Spinner ── */
+    .spinner {
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(255,255,255,0.4);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      flex-shrink: 0;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Results ── */
+    #results { margin-top: 2.5rem; }
+
+    .overall-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px 24px;
+      box-shadow: var(--shadow);
+      margin-bottom: 12px;
+    }
+    .overall-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--text-muted);
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .overall-text {
+      font-size: 15px;
+      color: var(--text-primary);
+      line-height: 1.7;
+    }
+    .scores-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+    }
+    .score-chip {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 11px;
+      border-radius: 20px;
+    }
+    .chip-green { background: var(--green-bg); color: var(--green-text); }
+    .chip-blue  { background: var(--blue-bg);  color: var(--blue-text);  }
+    .chip-amber { background: var(--amber-bg); color: var(--amber-text); }
+    .chip-red   { background: var(--red-bg);   color: var(--red-text);   }
+
+    .section-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      margin-bottom: 12px;
+    }
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 13px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    .section-icon {
+      width: 30px;
+      height: 30px;
+      border-radius: 7px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .icon-green  { background: var(--green-bg);  color: var(--green);  }
+    .icon-red    { background: var(--red-bg);    color: var(--red);    }
+    .icon-blue   { background: var(--blue-bg);   color: var(--blue);   }
+    .icon-amber  { background: var(--amber-bg);  color: var(--amber);  }
+    .icon-purple { background: var(--purple-bg); color: var(--purple); }
+    .section-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    .section-count {
+      margin-left: auto;
+      font-size: 12px;
+      color: var(--text-muted);
+      background: var(--surface-muted);
+      border: 1px solid var(--border);
+      padding: 2px 9px;
+      border-radius: 10px;
+    }
+    .finding {
+      display: flex;
+      gap: 14px;
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      align-items: flex-start;
+    }
+    .finding:last-child { border-bottom: none; }
+    .finding-num {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-variant-numeric: tabular-nums;
+      min-width: 22px;
+      padding-top: 3px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+    }
+    .finding-body { flex: 1; }
+    .finding-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 3px;
+    }
+    .finding-detail {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    /* ── Error ── */
+    .error-box {
+      background: var(--red-bg);
+      border: 1px solid var(--red);
+      border-radius: var(--radius);
+      padding: 14px 18px;
+      color: var(--red-text);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    .error-box strong { display: block; margin-bottom: 4px; }
+
+    /* ── Footer ── */
+    .site-footer {
+      margin-top: 5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+      font-size: 12px;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .footer-credit { line-height: 1.6; }
+    .footer-badge {
+      font-size: 11px;
+      padding: 3px 10px;
+      background: var(--accent-bg);
+      color: var(--accent-text);
+      border-radius: 20px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 540px) {
+      .page-wrap { padding: 2rem 1.1rem 4rem; }
+      .site-title { font-size: 26px; }
+      .controls { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-wrap">
+
+    <header class="site-header">
+      <div class="eyebrow">Pattern Zero Lab</div>
+      <h1 class="site-title">Mystery Plot Analyzer</h1>
+      <p class="site-desc">Paste any chapter or scene from your mystery novel. Get a forensic editorial breakdown — plot holes, character consistency, tension, and pacing — powered by AI.</p>
+    </header>
+
+    <div class="divider"></div>
+
+    <section>
+      <div class="input-label">
+        <span>Your chapter or scene</span>
+        <span id="word-count">0 words</span>
+      </div>
+      <textarea
+        id="chapter-input"
+        placeholder="Paste your chapter here — even a single scene works well. The analyzer reads for plot holes, character voice inconsistencies, tension pacing, and structural issues..."
+        aria-label="Chapter text input"
+      ></textarea>
+      <div class="input-hint">Works best with 200–4,000 words. Short scenes welcome too.</div>
+      <div class="controls">
+        <button class="btn-analyze" id="analyze-btn" onclick="analyze()">
+          Analyze chapter
+        </button>
+        <button class="btn-clear" onclick="clearAll()">Clear</button>
+        <span class="status-msg" id="status-msg"></span>
+      </div>
+    </section>
+
+    <div id="results"></div>
+
+    <footer class="site-footer">
+      <div class="footer-credit">Built by a writer who codes — analyzing mystery fiction with AI.</div>
+      <div class="footer-badge">Powered by Claude</div>
+    </footer>
+
+  </div>
+
+  <script>
+    const input   = document.getElementById('chapter-input');
+    const wcEl    = document.getElementById('word-count');
+    const btn     = document.getElementById('analyze-btn');
+    const statusEl = document.getElementById('status-msg');
+    const results = document.getElementById('results');
+
+    input.addEventListener('input', () => {
+      const w = input.value.trim().split(/\s+/).filter(Boolean).length;
+      wcEl.textContent = w + ' word' + (w !== 1 ? 's' : '');
+    });
+
+    function clearAll() {
+      input.value = '';
+      wcEl.textContent = '0 words';
+      results.innerHTML = '';
+      statusEl.textContent = '';
+    }
+
+    function setLoading(on) {
+      btn.disabled = on;
+      btn.innerHTML = on
+        ? '<div class="spinner"></div> Analyzing...'
+        : 'Analyze chapter';
+      statusEl.textContent = on ? 'This takes about 10 seconds...' : '';
+    }
+
+    function scoreChip(label, val) {
+      const cls = val === 'Strong' ? 'chip-green'
+                : val === 'Good'   ? 'chip-blue'
+                : val === 'Fair'   ? 'chip-amber'
+                : 'chip-red';
+      return `<span class="score-chip ${cls}">${label}: ${val}</span>`;
+    }
+
+    function renderSection(title, iconClass, symbol, items) {
+      if (!items || items.length === 0) return '';
+      const rows = items.map((it, i) => `
+        <div class="finding">
+          <div class="finding-num">${String(i + 1).padStart(2, '0')}</div>
+          <div class="finding-body">
+            <div class="finding-title">${it.title}</div>
+            <div class="finding-detail">${it.detail}</div>
+          </div>
+        </div>`).join('');
+      return `
+        <div class="section-card">
+          <div class="section-header">
+            <div class="section-icon ${iconClass}">${symbol}</div>
+            <div class="section-title">${title}</div>
+            <div class="section-count">${items.length}</div>
+          </div>
+          ${rows}
+        </div>`;
+    }
+
+    function renderResults(r) {
+      const s = r.scores || {};
+      results.innerHTML = `
+        <div class="overall-card">
+          <div class="overall-label">Overall assessment</div>
+          <div class="overall-text">${r.overall || ''}</div>
+          <div class="scores-row">
+            ${scoreChip('Plot', s.plot || '—')}
+            ${scoreChip('Characters', s.characters || '—')}
+            ${scoreChip('Tension', s.tension || '—')}
+            ${scoreChip('Pacing', s.pacing || '—')}
+          </div>
+        </div>
+        ${renderSection('Strengths to keep', 'icon-green', '✓', r.strengths)}
+        ${renderSection('Plot holes', 'icon-red', '!', r.plot_holes)}
+        ${renderSection('Character inconsistencies', 'icon-blue', '?', r.character_issues)}
+        ${renderSection('Tension improvements', 'icon-amber', '↑', r.tension_suggestions)}
+        ${renderSection('Pacing notes', 'icon-purple', '~', r.pacing_notes)}
+      `;
+      results.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    async function analyze() {
+      const text = input.value.trim();
+      const words = text.split(/\s+/).filter(Boolean).length;
+      if (!text || words < 50) {
+        statusEl.textContent = 'Add at least 50 words to analyze.';
+        return;
+      }
+
+      setLoading(true);
+      results.innerHTML = '';
+
+      try {
+        const res = await fetch('/api/analyze', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text })
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Request failed');
+        renderResults(data);
+      } catch (err) {
+        results.innerHTML = `
+          <div class="error-box">
+            <strong>Something went wrong.</strong>
+            ${err.message || 'Try again in a moment.'}
+          </div>`;
+      } finally {
+        setLoading(false);
+      }
+    }
+  </script>
+</body>
+</html>
