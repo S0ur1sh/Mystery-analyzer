@@ -4,7 +4,7 @@ AI-powered web app that analyzes mystery novel manuscripts for plot holes, chara
 
 A web app that analyzes mystery and thriller manuscripts 
 for plot holes, character inconsistencies, and pacing — 
-using the Google Gemini API.
+using the Groq API.
 
 Built while writing my own thriller novel set in Hyderabad, 
 India. I wanted editorial feedback I could get between 
@@ -18,7 +18,7 @@ writing sessions without waiting for a human reader.
 
 ## Tech
 HTML, CSS, JavaScript, Vercel serverless functions, 
-Google Gemini API
+Groq API
 
 ## Live demo
 mystery-analyzer.vercel.app
