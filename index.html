@@ -277,6 +277,59 @@
         .back-btn { font-family: var(--font-mono); font-size: 0.78rem; color: var(--steel-blue); background: transparent; border: none; cursor: pointer; padding: 0; margin-bottom: 1rem; letter-spacing: 1px; }
         .back-btn:hover { color: var(--amber); }
 
+        /* ── Character Map ── */
+        .chapter-inputs { display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1.5rem; }
+        .chapter-block { position: relative; }
+        .chapter-block-label { font-family: var(--font-mono); font-size: 0.75rem; color: var(--steel-blue); letter-spacing: 1px; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; }
+        .chapter-block textarea { height: 200px; }
+        .btn-remove-chapter { background: transparent; border: none; color: #555; font-family: var(--font-mono); font-size: 0.72rem; cursor: pointer; letter-spacing: 1px; }
+        .btn-remove-chapter:hover { color: var(--red-bright); }
+        .btn-add-chapter { background: transparent; border: 1px dashed #444; color: #666; font-family: var(--font-mono); font-size: 0.8rem; padding: 10px; width: 100%; cursor: pointer; letter-spacing: 1px; margin-bottom: 1.5rem; transition: all 0.2s; }
+        .btn-add-chapter:hover { border-color: var(--steel-blue); color: var(--steel-blue); }
+
+        /* Character results */
+        #character-results { margin-top: 2rem; }
+        .char-overall { padding: 1rem 1.5rem; background: rgba(74,127,165,0.07); border-left: 3px solid var(--steel-blue); font-family: var(--font-mono); font-size: 0.85rem; margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; }
+        .char-overall-label { color: #777; letter-spacing: 1px; }
+        .char-overall-score { font-size: 1rem; font-weight: 700; }
+
+        .char-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+        .char-card { background: var(--surface-color); border: 1px solid #2a2a2a; padding: 1.5rem; position: relative; opacity: 0; transform: translateY(16px); transition: opacity 0.4s ease, transform 0.4s ease; }
+        .char-card.visible { opacity: 1; transform: translateY(0); }
+        .char-card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; }
+        .char-name { font-family: var(--font-mono); font-size: 1rem; color: #fff; font-weight: 700; }
+        .char-role { font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 1px; padding: 2px 7px; border: 1px solid; margin-top: 4px; display: inline-block; }
+        .role-protagonist { color: var(--amber); border-color: var(--amber); }
+        .role-antagonist { color: var(--red-bright); border-color: var(--red-bright); }
+        .role-supporting { color: var(--steel-blue); border-color: var(--steel-blue); }
+        .role-mentioned { color: #555; border-color: #444; }
+
+        .char-status-badge { font-family: var(--font-mono); font-size: 0.65rem; font-weight: 700; letter-spacing: 1px; padding: 3px 8px; border: 2px solid; }
+        .status-consistent { color: var(--green); border-color: var(--green); }
+        .status-minor { color: var(--amber); border-color: var(--amber); }
+        .status-attention { color: var(--red-bright); border-color: var(--red-bright); }
+
+        .char-section-label { font-family: var(--font-mono); font-size: 0.68rem; color: #555; letter-spacing: 2px; margin: 1rem 0 0.5rem; }
+        .char-traits { display: flex; flex-wrap: wrap; gap: 6px; }
+        .char-trait { font-family: var(--font-mono); font-size: 0.68rem; padding: 2px 8px; background: #1f1e1d; border: 1px solid #333; color: #999; }
+        .char-text { font-size: 0.85rem; color: #888; line-height: 1.5; }
+        .char-inconsistency { margin-top: 6px; padding: 8px 10px; background: rgba(255,51,51,0.05); border-left: 2px solid var(--red-bright); }
+        .char-inconsistency-title { font-family: var(--font-mono); font-size: 0.7rem; color: var(--red-bright); margin-bottom: 3px; }
+        .char-inconsistency-detail { font-size: 0.8rem; color: #888; line-height: 1.4; }
+        .char-chapters { font-family: var(--font-mono); font-size: 0.68rem; color: #555; margin-top: 0.75rem; }
+
+        .char-relationships { background: var(--surface-color); border: 1px solid #2a2a2a; padding: 1.5rem; margin-bottom: 1.5rem; }
+        .char-relationships-title { font-family: var(--font-mono); font-size: 0.85rem; color: #fff; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid #333; }
+        .rel-item { margin-bottom: 0.75rem; }
+        .rel-chars { font-family: var(--font-mono); font-size: 0.75rem; color: var(--amber); margin-bottom: 3px; }
+        .rel-note { font-size: 0.85rem; color: #888; line-height: 1.4; }
+
+        .char-priority { padding: 1rem 1.5rem; background: rgba(200,134,10,0.07); border-left: 3px solid var(--amber); margin-bottom: 1.5rem; }
+        .char-priority-label { font-family: var(--font-mono); font-size: 0.7rem; color: var(--amber); letter-spacing: 2px; margin-bottom: 6px; }
+        .char-priority-text { font-size: 0.95rem; color: var(--text-offwhite); line-height: 1.5; }
+
+        .char-missing { padding: 1rem 1.5rem; background: rgba(74,127,165,0.05); border-left: 3px solid #333; font-size: 0.85rem; color: #777; }
+
         /* ── Ticker ── */
         .ticker-wrap { position: fixed; bottom: 0; width: 100%; background-color: var(--amber); height: 24px; overflow: hidden; z-index: 100; }
         .ticker { display: inline-block; white-space: nowrap; padding-top: 4px; font-family: var(--font-mono); font-size: 0.75rem; color: #000; font-weight: 700; animation: ticker 30s linear infinite; }
@@ -311,6 +364,7 @@
                 <li class="active" data-view="analyze">ANALYZE</li>
                 <li data-view="compare">COMPARE DRAFTS</li>
                 <li data-view="history">CASE HISTORY</li>
+                <li data-view="characters">CHARACTER MAP</li>
             </ul>
 
             <div class="history-section-label">RECENT CASES</div>
@@ -380,6 +434,29 @@
                 <div class="view-label">// CASE HISTORY — LAST 5 ANALYSES</div>
                 <div id="history-results"></div>
                 <div id="history-expanded"></div>
+            </div>
+
+            <!-- ── VIEW: CHARACTER MAP ── -->
+            <div class="view" id="view-characters">
+                <div class="view-label">// CHARACTER CONSISTENCY MAP — PASTE UP TO 5 CHAPTERS</div>
+                <div class="chapter-inputs" id="chapter-inputs">
+                    <div class="chapter-block" data-index="0">
+                        <div class="chapter-block-label">
+                            <span>CHAPTER 1</span>
+                        </div>
+                        <div class="editor-container">
+                            <textarea class="chapter-textarea" placeholder="[PASTE CHAPTER 1 HERE]"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <button class="btn-add-chapter" id="add-chapter-btn" onclick="addChapter()">+ ADD ANOTHER CHAPTER</button>
+                <div class="actions" style="justify-content:flex-end; margin-bottom:1rem;">
+                    <button class="btn-clear" onclick="clearCharacters()">CLEAR</button>
+                    <button class="btn-analyze" id="characters-btn" onclick="analyzeCharacters()">BUILD CHARACTER MAP</button>
+                </div>
+                <div id="characters-loading" class="loading-state">[ BUILDING DOSSIERS... ]</div>
+                <div id="characters-error" class="error-state"></div>
+                <div id="character-results"></div>
             </div>
         </main>
     </div>
@@ -661,7 +738,6 @@
                 document.getElementById('loading-state').style.display = 'none';
                 section.style.display = 'flex';
                 animateResults(section);
-                setTimeout(() => section.scrollIntoView({ behavior: 'smooth', block: 'start' }), 150);
 
             } catch (err) {
                 document.getElementById('loading-state').style.display = 'none';
@@ -724,13 +800,185 @@
                 document.getElementById('compare-loading').style.display = 'none';
                 section.style.display = 'flex';
                 animateResults(section);
-                setTimeout(() => section.scrollIntoView({ behavior: 'smooth', block: 'start' }), 150);
 
             } catch (err) {
                 document.getElementById('compare-loading').style.display = 'none';
                 showError('compare-error', 'COMPARISON FAILED — ' + (err.message || 'Try again.'));
             } finally {
                 document.getElementById('compare-btn').disabled = false;
+                statusDot.classList.remove('active');
+                statusText.innerText = 'SYSTEM READY';
+            }
+        }
+
+        // ── CHARACTER MAP ──
+        let chapterCount = 1;
+
+        function addChapter() {
+            if (chapterCount >= 5) {
+                document.getElementById('add-chapter-btn').style.opacity = '0.4';
+                document.getElementById('add-chapter-btn').disabled = true;
+                return;
+            }
+            chapterCount++;
+            const container = document.getElementById('chapter-inputs');
+            const block = document.createElement('div');
+            block.className = 'chapter-block';
+            block.dataset.index = chapterCount - 1;
+            block.innerHTML = `
+                <div class="chapter-block-label">
+                    <span>CHAPTER ${chapterCount}</span>
+                    <button class="btn-remove-chapter" onclick="removeChapter(this)">REMOVE</button>
+                </div>
+                <div class="editor-container">
+                    <textarea class="chapter-textarea" placeholder="[PASTE CHAPTER ${chapterCount} HERE]"></textarea>
+                </div>`;
+            container.appendChild(block);
+            if (chapterCount >= 5) {
+                document.getElementById('add-chapter-btn').style.opacity = '0.4';
+                document.getElementById('add-chapter-btn').disabled = true;
+            }
+        }
+
+        function removeChapter(btn) {
+            btn.closest('.chapter-block').remove();
+            chapterCount--;
+            document.getElementById('add-chapter-btn').style.opacity = '1';
+            document.getElementById('add-chapter-btn').disabled = false;
+            // Renumber remaining
+            document.querySelectorAll('.chapter-block').forEach((block, i) => {
+                block.querySelector('.chapter-block-label span').textContent = `CHAPTER ${i + 1}`;
+                block.querySelector('textarea').placeholder = `[PASTE CHAPTER ${i + 1} HERE]`;
+            });
+        }
+
+        function clearCharacters() {
+            document.querySelectorAll('.chapter-textarea').forEach(t => t.value = '');
+            document.getElementById('character-results').innerHTML = '';
+            document.getElementById('characters-loading').style.display = 'none';
+            document.getElementById('characters-error').style.display = 'none';
+            // Reset to single chapter
+            const container = document.getElementById('chapter-inputs');
+            const blocks = container.querySelectorAll('.chapter-block');
+            blocks.forEach((b, i) => { if (i > 0) b.remove(); });
+            chapterCount = 1;
+            document.getElementById('add-chapter-btn').style.opacity = '1';
+            document.getElementById('add-chapter-btn').disabled = false;
+        }
+
+        function getRoleClass(role) {
+            const r = (role || '').toLowerCase();
+            if (r.includes('protagonist')) return 'role-protagonist';
+            if (r.includes('antagonist')) return 'role-antagonist';
+            if (r.includes('support')) return 'role-supporting';
+            return 'role-mentioned';
+        }
+
+        function getStatusClass(status) {
+            const s = (status || '').toLowerCase();
+            if (s.includes('consistent')) return 'status-consistent';
+            if (s.includes('minor')) return 'status-minor';
+            return 'status-attention';
+        }
+
+        function getConsistencyColor(val) {
+            const v = (val || '').toLowerCase();
+            if (v === 'strong') return 'var(--green)';
+            if (v === 'good') return 'var(--steel-blue)';
+            if (v === 'fair') return 'var(--amber)';
+            return 'var(--red-bright)';
+        }
+
+        function buildCharCard(char) {
+            const inconsistencies = (char.inconsistencies || []).map(inc => `
+                <div class="char-inconsistency">
+                    <div class="char-inconsistency-title">⚠ ${inc.title}</div>
+                    <div class="char-inconsistency-detail">${inc.detail}</div>
+                </div>`).join('');
+
+            const traits = (char.traits || []).map(t => `<span class="char-trait">${t}</span>`).join('');
+            const chapters = char.chapters_present ? `<div class="char-chapters">APPEARS IN: ${char.chapters_present.map(c => `CH.${c}`).join(', ')}</div>` : '';
+
+            return `<div class="char-card">
+                <div class="char-card-top">
+                    <div>
+                        <div class="char-name">${char.name}</div>
+                        <div class="char-role ${getRoleClass(char.role)}">${(char.role || 'unknown').toUpperCase()}</div>
+                    </div>
+                    <div class="char-status-badge ${getStatusClass(char.status)}">${(char.status || '').toUpperCase()}</div>
+                </div>
+                ${traits ? `<div class="char-section-label">TRAITS</div><div class="char-traits">${traits}</div>` : ''}
+                ${char.dialogue_style ? `<div class="char-section-label">DIALOGUE STYLE</div><div class="char-text">${char.dialogue_style}</div>` : ''}
+                ${char.arc_notes ? `<div class="char-section-label">ARC</div><div class="char-text">${char.arc_notes}</div>` : ''}
+                ${inconsistencies ? `<div class="char-section-label">INCONSISTENCIES</div>${inconsistencies}` : ''}
+                ${chapters}
+            </div>`;
+        }
+
+        async function analyzeCharacters() {
+            const textareas = document.querySelectorAll('.chapter-textarea');
+            const chapters = Array.from(textareas).map(t => t.value.trim()).filter(t => t.split(/\s+/).length >= 30);
+
+            if (chapters.length === 0) {
+                showError('characters-error', 'INSUFFICIENT EVIDENCE — At least one chapter needs 30+ words.');
+                return;
+            }
+
+            document.getElementById('character-results').innerHTML = '';
+            document.getElementById('characters-error').style.display = 'none';
+            document.getElementById('characters-loading').style.display = 'block';
+            document.getElementById('characters-btn').disabled = true;
+            statusDot.classList.add('active');
+            statusText.innerText = 'BUILDING DOSSIERS';
+
+            try {
+                const res = await fetch('/api/characters', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ chapters })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Request failed');
+
+                const container = document.getElementById('character-results');
+                const chars = (data.characters || []);
+                const relationships = (data.relationship_notes || []);
+
+                container.innerHTML = `
+                    <div class="char-overall">
+                        <div class="char-overall-label">OVERALL CONSISTENCY</div>
+                        <div class="char-overall-score" style="color:${getConsistencyColor(data.overall_consistency)}">${(data.overall_consistency || '').toUpperCase()}</div>
+                    </div>
+                    ${data.top_priority ? `<div class="char-priority">
+                        <div class="char-priority-label">TOP PRIORITY FIX</div>
+                        <div class="char-priority-text">${data.top_priority}</div>
+                    </div>` : ''}
+                    <div class="char-grid">${chars.map(c => buildCharCard(c)).join('')}</div>
+                    ${relationships.length > 0 ? `<div class="char-relationships">
+                        <div class="char-relationships-title">RELATIONSHIP DYNAMICS</div>
+                        ${relationships.map(r => `<div class="rel-item">
+                            <div class="rel-chars">${r.characters}</div>
+                            <div class="rel-note">${r.note}</div>
+                        </div>`).join('')}
+                    </div>` : ''}
+                    ${data.missing_characters && data.missing_characters.toLowerCase() !== 'none' ? `<div class="char-missing">⚠ MISSING CHARACTERS: ${data.missing_characters}</div>` : ''}
+                `;
+
+                document.getElementById('characters-loading').style.display = 'none';
+
+                // Animate cards
+                setTimeout(() => {
+                    container.querySelectorAll('.char-card').forEach((c, i) => {
+                        setTimeout(() => { c.classList.add('visible'); playTypewriterClick(); }, i * 200);
+                    });
+                    setTimeout(() => container.scrollIntoView({ behavior: 'smooth', block: 'start' }), 150);
+                }, 100);
+
+            } catch (err) {
+                document.getElementById('characters-loading').style.display = 'none';
+                showError('characters-error', 'DOSSIER BUILD FAILED — ' + (err.message || 'Try again.'));
+            } finally {
+                document.getElementById('characters-btn').disabled = false;
                 statusDot.classList.remove('active');
                 statusText.innerText = 'SYSTEM READY';
             }
