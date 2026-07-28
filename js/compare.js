@@ -144,7 +144,7 @@ CCTV patrol log reports Dr. Vance badge swiped at inner lab door at 21:57. Video
                     const response = await fetch('/api/compare', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ theory1: val1, theory2: val2 })
+                        body: JSON.stringify({ text1: theory1, text2: theory2 })
                     });
 
                     if (response.ok) {
