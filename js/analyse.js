@@ -133,7 +133,7 @@ Meanwhile, Officer Chen reported no activity on CCTV, but audit logs show the vi
                 `;
 
                 try {
-                    const response = await fetch('/api/analyse', {
+                    const response = await fetch('/api/analyze', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ text, prompt: text })
