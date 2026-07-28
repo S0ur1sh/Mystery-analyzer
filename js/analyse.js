@@ -89,7 +89,7 @@ const AnalyseEngine = {
                     }
                     if (statusTag) statusTag.innerText = `FILE LOADED: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
                 } catch (error) {
-                    console.error('File extraction failed:', error);
+                    console.error('File extraction failed:', error)
                     if (statusTag) statusTag.innerText = `FILE ERROR: ${error.message}`;
                     alert(`Could not read ${file.name}. ${error.message}`);
                 }
