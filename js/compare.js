@@ -83,29 +83,35 @@ const CompareEngine = {
 
         // PDF 1 Upload Handler
         if (pdf1 && text1) {
-            pdf1.addEventListener('change', (e) => {
+            pdf1.addEventListener('change', async (e) => {
                 const file = e.target.files[0];
                 if (!file) return;
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    text1.value = `[MANUSCRIPT 01: ${file.name}]\n\n` + event.target.result;
+                try {
+                    const content = await window.extractFileText(file);
+                    text1.value = `[MANUSCRIPT 01: ${file.name}]\n\n${content}`;
                     if (tag1) tag1.innerText = `LOADED: ${file.name}`;
-                };
-                reader.readAsText(file);
+                } catch (error) {
+                    console.error('File 1 extraction failed:', error);
+                    if (tag1) tag1.innerText = `FILE ERROR: ${error.message}`;
+                    alert(`Could not read ${file.name}. ${error.message}`);
+                }
             });
         }
 
         // PDF 2 Upload Handler
         if (pdf2 && text2) {
-            pdf2.addEventListener('change', (e) => {
+            pdf2.addEventListener('change', async (e) => {
                 const file = e.target.files[0];
                 if (!file) return;
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    text2.value = `[MANUSCRIPT 02: ${file.name}]\n\n` + event.target.result;
+                try {
+                    const content = await window.extractFileText(file);
+                    text2.value = `[MANUSCRIPT 02: ${file.name}]\n\n${content}`;
                     if (tag2) tag2.innerText = `LOADED: ${file.name}`;
-                };
-                reader.readAsText(file);
+                } catch (error) {
+                    console.error('File 2 extraction failed:', error);
+                    if (tag2) tag2.innerText = `FILE ERROR: ${error.message}`;
+                    alert(`Could not read ${file.name}. ${error.message}`);
+                }
             });
         }
 
@@ -144,7 +150,7 @@ CCTV patrol log reports Dr. Vance badge swiped at inner lab door at 21:57. Video
                     const response = await fetch('/api/compare', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ text1: theory1, text2: theory2 })
+                        body: JSON.stringify({ text1: val1, text2: val2 })
                     });
 
                     if (response.ok) {
@@ -156,8 +162,7 @@ CCTV patrol log reports Dr. Vance badge swiped at inner lab door at 21:57. Video
                     console.log('Real API unavailable, running simulated differential comparison engine.');
                 }
 
-                setTimeout(() => {
-                    this.renderComparisonResults(resultsPanel, {
+                this.renderComparisonResults(resultsPanel, {
                         matchLikelihood: '89.7% [HIGH COLLUSION LINK]',
                         summary: 'Dr. Vance timeline conflicts directly with Officer Chen CCTV audit log.',
                         contradictions: [
@@ -165,8 +170,7 @@ CCTV patrol log reports Dr. Vance badge swiped at inner lab door at 21:57. Video
                             { topic: 'CCTV RECORD', val1: 'Stated no unusual events', val2: '15-minute manual video loop detected' },
                             { topic: 'COLLUSION RISK', val1: 'Denies knowing Chen well', val2: 'Encrypt crypto transfer logs found' }
                         ]
-                    });
-                }, 800);
+                });
             });
         }
     },
