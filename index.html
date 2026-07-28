@@ -3,1597 +3,931 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🔍 Pattern Zero Lab</title>
+    <title>MYSTERY ANALYZER // NERV MAGI-04 COMMAND CENTER</title>
+    <meta name="description" content="AI-assisted intelligence platform designed to examine mysteries, narratives, characters, relationships, clues, and hidden patterns.">
+    
+    <!-- Google Fonts for Tactical Anime Command Center Aesthetics -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;700&display=swap">
-    <style>
-
-        :root {
-            --bg-color: #0f0e0d;
-            --surface-color: #1a1918;
-            --surface-light: #242220;
-            --text-main: #d4d4d4;
-            --text-offwhite: #f5f3ee;
-            --amber: #e8a020;
-            --steel-blue: #4a7fa5;
-            --crimson: #8b0000;
-            --red-bright: #ff3333;
-            --green: #2e8b57;
-            --font-mono: 'JetBrains Mono', monospace;
-            --font-sans: 'Inter', sans-serif;
-        }
-
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            font-family: var(--font-sans);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow-x: hidden;
-            position: relative;
-            padding-bottom: 28px;
-        }
-
-        body::before {
-            content: "";
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            pointer-events: none;
-            background-image: url('data:image/svg+xml;utf8,<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(%23n)" opacity="0.04"/></svg>');
-            z-index: 9999;
-        }
-
-        .tape-header {
-            height: 4px;
-            width: 100%;
-            background: repeating-linear-gradient(45deg, var(--bg-color), var(--bg-color) 10px, var(--crimson) 10px, var(--crimson) 20px);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .app-container {
-            display: flex;
-            flex-grow: 1;
-            max-width: 1400px;
-            margin: 0 auto;
-            width: 100%;
-            padding-bottom: 40px;
-        }
-
-        /* ── Sidebar ── */
-        aside {
-            width: 220px;
-            flex-shrink: 0;
-            border-right: 1px solid #333;
-            padding: 2rem 1.5rem;
-            display: flex;
-            flex-direction: column;
-            gap: 2rem;
-            position: sticky;
-            top: 4px;
-            height: calc(100vh - 4px);
-            overflow-y: auto;
-            scrollbar-width: thin;
-            scrollbar-color: #2a2a2a transparent;
-        }
-
-        aside::-webkit-scrollbar { width: 4px; }
-        aside::-webkit-scrollbar-track { background: transparent; }
-        aside::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 2px; }
-        aside::-webkit-scrollbar-thumb:hover { background: #444; }
-
-        .logo-box { display: flex; flex-direction: column; gap: 0.5rem; }
-        .logo-mark { font-family: var(--font-mono); color: var(--amber); font-size: 2rem; font-weight: 700; line-height: 1; }
-        .case-number { font-family: var(--font-mono); color: var(--steel-blue); font-size: 0.75rem; letter-spacing: 1px; }
-
-        .nav-menu { display: flex; flex-direction: column; gap: 0.75rem; list-style: none; }
-        .nav-menu li {
-            font-family: var(--font-mono);
-            font-size: 0.78rem;
-            letter-spacing: 1px;
-            color: #666;
-            cursor: pointer;
-            transition: color 0.2s;
-            padding: 6px 0;
-        }
-        .nav-menu li.active, .nav-menu li:hover { color: var(--text-main); }
-        .nav-menu li.active::before { content: "> "; color: var(--amber); }
-
-        /* History entries in sidebar */
-        .history-section-label {
-            font-family: var(--font-mono);
-            font-size: 0.7rem;
-            color: #555;
-            letter-spacing: 2px;
-            margin-top: 0.5rem;
-            padding-top: 1rem;
-            border-top: 1px solid #2a2a2a;
-        }
-
-        .history-entry {
-            background: var(--surface-color);
-            border: 1px solid #2a2a2a;
-            padding: 8px 10px;
-            cursor: pointer;
-            transition: border-color 0.2s;
-            margin-top: 6px;
-        }
-        .history-entry:hover { border-color: var(--amber); }
-        .history-entry-id { font-family: var(--font-mono); font-size: 0.68rem; color: var(--amber); }
-        .history-entry-date { font-family: var(--font-mono); font-size: 0.65rem; color: #555; margin-top: 2px; }
-        .history-entry-preview { font-size: 0.75rem; color: #777; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .history-empty { font-family: var(--font-mono); font-size: 0.7rem; color: #444; margin-top: 8px; }
-
-        .stats-section-label {
-            font-family: var(--font-mono);
-            font-size: 0.7rem;
-            color: #555;
-            letter-spacing: 2px;
-            padding-top: 1rem;
-            border-top: 1px solid #2a2a2a;
-            margin-top: 0.5rem;
-        }
-        .stats-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 6px;
-        }
-        .stats-row-label {
-            font-family: var(--font-mono);
-            font-size: 0.68rem;
-            color: #555;
-        }
-        .stats-row-value {
-            font-family: var(--font-mono);
-            font-size: 0.72rem;
-            color: var(--amber);
-            font-weight: 700;
-        }
-        .stats-total {
-            font-family: var(--font-mono);
-            font-size: 0.68rem;
-            color: #444;
-            margin-top: 8px;
-            padding-top: 6px;
-            border-top: 1px dashed #2a2a2a;
-        }
-            font-family: var(--font-mono);
-            font-size: 0.75rem;
-            color: #666;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            flex-shrink: 0;
-        }
-        .settings-box input[type="checkbox"] { accent-color: var(--amber); cursor: pointer; }
-
-        /* ── Main ── */
-        main { flex-grow: 1; padding: 3rem 4rem; max-width: 1000px; }
-
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-            margin-bottom: 2rem;
-            border-bottom: 1px solid var(--amber);
-            padding-bottom: 1rem;
-        }
-
-        h1 { font-family: var(--font-sans); font-weight: 600; letter-spacing: 4px; font-size: 1.5rem; color: var(--text-main); }
-
-        .status-indicator { display: flex; align-items: center; gap: 0.75rem; font-family: var(--font-mono); font-size: 0.85rem; color: var(--steel-blue); }
-        .blink-dot { width: 8px; height: 8px; background-color: var(--red-bright); border-radius: 50%; box-shadow: 0 0 6px var(--red-bright); animation: blink 2.5s ease-in-out infinite; flex-shrink: 0; }
-        .blink-dot.active { animation: blink 0.8s ease-in-out infinite; box-shadow: 0 0 10px var(--red-bright); }
-        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
-
-        /* ── Views ── */
-        .view { display: none; }
-        .view.active { display: block; }
-
-        /* Tab label */
-        .view-label {
-            font-family: var(--font-mono);
-            font-size: 0.78rem;
-            color: #555;
-            letter-spacing: 2px;
-            margin-bottom: 1.5rem;
-            padding-bottom: 0.75rem;
-            border-bottom: 1px dashed #2a2a2a;
-        }
-
-        /* ── Textarea / Editor ── */
-        .editor-container { position: relative; margin-bottom: 1.5rem; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-
-        textarea {
-            width: 100%;
-            height: 380px;
-            background-color: var(--surface-color);
-            color: var(--text-offwhite);
-            font-family: var(--font-sans);
-            font-size: 1.05rem;
-            padding: 2rem 2.5rem;
-            border: 1px solid #333;
-            resize: vertical;
-            cursor: crosshair;
-            background-image: repeating-linear-gradient(transparent, transparent 31px, rgba(74, 127, 165, 0.15) 31px, rgba(74, 127, 165, 0.15) 32px);
-            background-attachment: local;
-            line-height: 32px;
-        }
-        textarea:focus { outline: none; border-color: var(--steel-blue); }
-
-        /* Compare view: two textareas side by side */
-        .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; }
-        .compare-grid textarea { height: 300px; }
-        .draft-label { font-family: var(--font-mono); font-size: 0.75rem; color: var(--steel-blue); letter-spacing: 1px; margin-bottom: 6px; }
-
-        .editor-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; }
-        .word-count { font-family: var(--font-mono); color: var(--steel-blue); font-size: 0.85rem; }
-        .actions { display: flex; gap: 1rem; }
-
-        .btn-clear { background: transparent; color: #888; border: 1px solid #444; padding: 0.75rem 1.5rem; font-family: var(--font-mono); font-size: 0.85rem; cursor: pointer; transition: all 0.2s; }
-        .btn-clear:hover { background: #222; color: var(--text-main); }
-
-        .btn-analyze { background-color: var(--amber); color: #000; border: none; padding: 0.75rem 2rem; font-family: var(--font-mono); font-weight: 700; font-size: 0.85rem; cursor: pointer; position: relative; overflow: hidden; transition: background 0.2s; border-radius: 0; }
-        .btn-analyze::after { content: ""; position: absolute; top: -50%; left: 0; width: 100%; height: 20%; background: rgba(255,255,255,0.4); box-shadow: 0 0 10px rgba(255,255,255,0.6); opacity: 0; pointer-events: none; }
-        .btn-analyze:hover::after { animation: scanline 1.2s infinite linear; opacity: 1; }
-        .btn-analyze:disabled { opacity: 0.5; cursor: not-allowed; }
-        @keyframes scanline { 0% { top: -20%; } 100% { top: 120%; } }
-
-        /* ── States ── */
-        .loading-state { display: none; text-align: center; padding: 4rem 0; font-family: var(--font-mono); color: var(--amber); letter-spacing: 2px; animation: pulseText 1.5s infinite; }
-        @keyframes pulseText { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
-
-        .error-state { display: none; margin-top: 2rem; padding: 1rem 1.5rem; background: rgba(255,51,51,0.07); border-left: 3px solid var(--red-bright); font-family: var(--font-mono); font-size: 0.85rem; color: var(--red-bright); letter-spacing: 1px; }
-
-        /* ── Results ── */
-        #results-section { display: none; flex-direction: column; gap: 2rem; margin-top: 3rem; border-top: 1px dashed #333; padding-top: 3rem; }
-        #compare-results { display: none; flex-direction: column; gap: 2rem; margin-top: 3rem; border-top: 1px dashed #333; padding-top: 3rem; }
-        #history-results { margin-top: 1rem; }
-
-        .overall-summary { font-size: 1.1rem; line-height: 1.6; color: var(--text-offwhite); margin-bottom: 2rem; padding: 1.5rem; background: rgba(74,127,165,0.05); border-left: 3px solid var(--steel-blue); }
-
-        /* Score gauge */
-        .scores-panel { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 3rem; }
-        .score-row { background: var(--surface-color); padding: 1rem; border: 1px solid #333; }
-        .score-label { font-family: var(--font-mono); font-size: 0.8rem; color: #888; display: block; margin-bottom: 0.5rem; }
-        .score-gauge { height: 6px; background: #111; margin-bottom: 0.5rem; position: relative; overflow: hidden; }
-        .score-fill { height: 100%; background: var(--amber); width: 0%; transition: width 1s cubic-bezier(0.4,0,0.2,1); }
-        .score-value { font-family: var(--font-mono); font-size: 0.9rem; color: var(--text-main); font-weight: 700; }
-
-        /* Compare score change */
-        .compare-scores { display: grid; grid-template-columns: repeat(4,1fr); gap: 1rem; margin-bottom: 2rem; }
-        .compare-score-box { background: var(--surface-color); padding: 1rem; border: 1px solid #333; text-align: center; }
-        .compare-score-key { font-family: var(--font-mono); font-size: 0.72rem; color: #888; letter-spacing: 1px; margin-bottom: 6px; }
-        .compare-score-val { font-family: var(--font-mono); font-size: 0.95rem; font-weight: 700; }
-        .improved { color: var(--green); }
-        .same { color: var(--steel-blue); }
-        .weakened { color: var(--red-bright); }
-
-        /* Verdict banner */
-        .verdict-banner { padding: 1.25rem 1.5rem; border: 1px solid; margin-bottom: 2rem; }
-        .verdict-winner { font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 2px; margin-bottom: 6px; }
-        .verdict-text { font-size: 1rem; line-height: 1.5; color: var(--text-offwhite); }
-        .verdict-advice { font-family: var(--font-mono); font-size: 0.82rem; color: var(--amber); margin-top: 10px; }
-
-        /* Evidence cards */
-        .evidence-card { background-color: var(--surface-color); color: var(--text-main); padding: 2.5rem 2rem 2rem; position: relative; box-shadow: 0 4px 15px rgba(0,0,0,0.3); clip-path: polygon(0% 10px,2% 0px,4% 10px,6% 0px,8% 10px,10% 0px,12% 10px,14% 0px,16% 10px,18% 0px,20% 10px,22% 0px,24% 10px,26% 0px,28% 10px,30% 0px,32% 10px,34% 0px,36% 10px,38% 0px,40% 10px,42% 0px,44% 10px,46% 0px,48% 10px,50% 0px,52% 10px,54% 0px,56% 10px,58% 0px,60% 10px,62% 0px,64% 10px,66% 0px,68% 10px,70% 0px,72% 10px,74% 0px,76% 10px,78% 0px,80% 10px,82% 0px,84% 10px,86% 0px,88% 10px,90% 0px,92% 10px,94% 0px,96% 10px,98% 0px,100% 10px,100% 100%,0% 100%); opacity: 0; transform: translateY(20px); transition: opacity 0.5s ease, transform 0.5s ease; }
-        .evidence-card.visible { opacity: 1; transform: translateY(0); }
-
-        .card-header { font-family: var(--font-mono); font-size: 1.1rem; color: #fff; margin-bottom: 1.5rem; padding-bottom: 0.5rem; border-bottom: 1px solid #333; }
-
-        .exhibit-item { margin-bottom: 1.5rem; }
-        .exhibit-item:last-child { margin-bottom: 0; }
-        .exhibit-title { font-family: var(--font-mono); color: var(--red-bright); font-size: 0.9rem; margin-bottom: 0.5rem; }
-        .strength-title { color: var(--green); }
-        .advisory-title { color: var(--amber); }
-        .neutral-title { color: var(--steel-blue); }
-        .exhibit-detail { font-size: 0.95rem; line-height: 1.5; color: var(--text-offwhite); padding-left: 1rem; border-left: 1px solid #444; }
-
-        .stamp { position: absolute; top: 25px; right: 20px; border: 3px solid; padding: 4px 10px; font-family: var(--font-mono); font-weight: 700; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 2px; transform: rotate(-10deg); opacity: 0.8; pointer-events: none; }
-        .stamp-critical { color: var(--red-bright); border-color: var(--red-bright); }
-        .stamp-advisory { color: var(--amber); border-color: var(--amber); }
-        .stamp-cleared { color: var(--green); border-color: var(--green); transform: rotate(5deg); }
-        .stamp-neutral { color: var(--steel-blue); border-color: var(--steel-blue); transform: rotate(-5deg); }
-
-        /* History view */
-        .history-case-card { background: var(--surface-color); border: 1px solid #2a2a2a; padding: 1.5rem 2rem; margin-bottom: 1.5rem; cursor: pointer; transition: border-color 0.2s; }
-        .history-case-card:hover { border-color: var(--amber); }
-        .history-case-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
-        .history-case-id { font-family: var(--font-mono); color: var(--amber); font-size: 0.85rem; }
-        .history-case-date { font-family: var(--font-mono); color: #555; font-size: 0.75rem; }
-        .history-case-preview { font-size: 0.9rem; color: #777; margin-bottom: 1rem; font-style: italic; }
-        .history-case-scores { display: flex; gap: 1rem; flex-wrap: wrap; }
-        .history-score-chip { font-family: var(--font-mono); font-size: 0.72rem; padding: 3px 8px; border: 1px solid #333; }
-        .history-empty-state { font-family: var(--font-mono); color: #444; padding: 3rem 0; text-align: center; letter-spacing: 2px; }
-        .history-clear-btn { font-family: var(--font-mono); font-size: 0.75rem; color: #555; background: transparent; border: 1px solid #333; padding: 6px 12px; cursor: pointer; margin-bottom: 1.5rem; }
-        .history-clear-btn:hover { color: var(--red-bright); border-color: var(--red-bright); }
-
-        /* Expanded history result */
-        #history-expanded { margin-top: 2rem; border-top: 1px dashed #333; padding-top: 2rem; display: none; flex-direction: column; gap: 2rem; }
-        .back-btn { font-family: var(--font-mono); font-size: 0.78rem; color: var(--steel-blue); background: transparent; border: none; cursor: pointer; padding: 0; margin-bottom: 1rem; letter-spacing: 1px; }
-        .back-btn:hover { color: var(--amber); }
-
-        /* ── Character Map ── */
-        .chapter-inputs { display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1.5rem; }
-        .chapter-block { position: relative; }
-        .chapter-block-label { font-family: var(--font-mono); font-size: 0.75rem; color: var(--steel-blue); letter-spacing: 1px; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; }
-        .chapter-block textarea { height: 200px; }
-        .btn-remove-chapter { background: transparent; border: none; color: #555; font-family: var(--font-mono); font-size: 0.72rem; cursor: pointer; letter-spacing: 1px; }
-        .btn-remove-chapter:hover { color: var(--red-bright); }
-        .btn-add-chapter { background: transparent; border: 1px dashed #444; color: #666; font-family: var(--font-mono); font-size: 0.8rem; padding: 10px; width: 100%; cursor: pointer; letter-spacing: 1px; margin-bottom: 1.5rem; transition: all 0.2s; }
-        .btn-add-chapter:hover { border-color: var(--steel-blue); color: var(--steel-blue); }
-
-        /* Character results */
-        #character-results { margin-top: 2rem; }
-        .char-overall { padding: 1rem 1.5rem; background: rgba(74,127,165,0.07); border-left: 3px solid var(--steel-blue); font-family: var(--font-mono); font-size: 0.85rem; margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; }
-        .char-overall-label { color: #777; letter-spacing: 1px; }
-        .char-overall-score { font-size: 1rem; font-weight: 700; }
-
-        .char-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
-        .char-card { background: var(--surface-color); border: 1px solid #2a2a2a; padding: 1.5rem; position: relative; opacity: 0; transform: translateY(16px); transition: opacity 0.4s ease, transform 0.4s ease; }
-        .char-card.visible { opacity: 1; transform: translateY(0); }
-        .char-card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; }
-        .char-name { font-family: var(--font-mono); font-size: 1rem; color: #fff; font-weight: 700; }
-        .char-role { font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 1px; padding: 2px 7px; border: 1px solid; margin-top: 4px; display: inline-block; }
-        .role-protagonist { color: var(--amber); border-color: var(--amber); }
-        .role-antagonist { color: var(--red-bright); border-color: var(--red-bright); }
-        .role-supporting { color: var(--steel-blue); border-color: var(--steel-blue); }
-        .role-mentioned { color: #555; border-color: #444; }
-
-        .char-status-badge { font-family: var(--font-mono); font-size: 0.65rem; font-weight: 700; letter-spacing: 1px; padding: 3px 8px; border: 2px solid; }
-        .status-consistent { color: var(--green); border-color: var(--green); }
-        .status-minor { color: var(--amber); border-color: var(--amber); }
-        .status-attention { color: var(--red-bright); border-color: var(--red-bright); }
-
-        .char-section-label { font-family: var(--font-mono); font-size: 0.68rem; color: #555; letter-spacing: 2px; margin: 1rem 0 0.5rem; }
-        .char-traits { display: flex; flex-wrap: wrap; gap: 6px; }
-        .char-trait { font-family: var(--font-mono); font-size: 0.68rem; padding: 2px 8px; background: #1f1e1d; border: 1px solid #333; color: #999; }
-        .char-text { font-size: 0.85rem; color: #888; line-height: 1.5; }
-        .char-inconsistency { margin-top: 6px; padding: 8px 10px; background: rgba(255,51,51,0.05); border-left: 2px solid var(--red-bright); }
-        .char-inconsistency-title { font-family: var(--font-mono); font-size: 0.7rem; color: var(--red-bright); margin-bottom: 3px; }
-        .char-inconsistency-detail { font-size: 0.8rem; color: #888; line-height: 1.4; }
-        .char-chapters { font-family: var(--font-mono); font-size: 0.68rem; color: #555; margin-top: 0.75rem; }
-
-        .char-relationships { background: var(--surface-color); border: 1px solid #2a2a2a; padding: 1.5rem; margin-bottom: 1.5rem; }
-        .char-relationships-title { font-family: var(--font-mono); font-size: 0.85rem; color: #fff; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid #333; }
-        .rel-item { margin-bottom: 0.75rem; }
-        .rel-chars { font-family: var(--font-mono); font-size: 0.75rem; color: var(--amber); margin-bottom: 3px; }
-        .rel-note { font-size: 0.85rem; color: #888; line-height: 1.4; }
-
-        .char-priority { padding: 1rem 1.5rem; background: rgba(200,134,10,0.07); border-left: 3px solid var(--amber); margin-bottom: 1.5rem; }
-        .char-priority-label { font-family: var(--font-mono); font-size: 0.7rem; color: var(--amber); letter-spacing: 2px; margin-bottom: 6px; }
-        .char-priority-text { font-size: 0.95rem; color: var(--text-offwhite); line-height: 1.5; }
-
-        .char-missing { padding: 1rem 1.5rem; background: rgba(74,127,165,0.05); border-left: 3px solid #333; font-size: 0.85rem; color: #777; }
-
-        /* ── Sentiment Arc ── */
-        .sentiment-intro { font-family: var(--font-mono); font-size: 0.8rem; color: #555; margin-bottom: 1.5rem; line-height: 1.6; padding: 1rem; background: var(--surface-color); border-left: 3px solid #333; }
-        .sentiment-intro span { color: var(--steel-blue); }
-        #sentiment-chart-wrap { display: none; margin-top: 2rem; }
-        .sentiment-stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 1rem; margin-bottom: 2rem; }
-        .stat-box { background: var(--surface-color); border: 1px solid #2a2a2a; padding: 1rem 1.25rem; }
-        .stat-label { font-family: var(--font-mono); font-size: 0.68rem; color: #555; letter-spacing: 2px; margin-bottom: 6px; }
-        .stat-value { font-family: var(--font-mono); font-size: 1.1rem; font-weight: 700; }
-        .stat-positive { color: var(--green); }
-        .stat-negative { color: var(--red-bright); }
-        .stat-neutral { color: var(--steel-blue); }
-        #sentiment-svg-container { background: var(--surface-color); border: 1px solid #2a2a2a; padding: 1.5rem; margin-bottom: 2rem; overflow-x: auto; }
-        #sentiment-svg-container svg { display: block; width: 100%; height: auto; }
-        .sentiment-tooltip { position: fixed; background: #1a1918; border: 1px solid var(--amber); padding: 10px 14px; font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-main); max-width: 280px; pointer-events: none; z-index: 1000; display: none; line-height: 1.5; }
-        .tooltip-score { color: var(--amber); margin-bottom: 4px; }
-        .tooltip-text { color: #888; font-size: 0.68rem; }
-        .sentiment-legend { display: flex; gap: 2rem; font-family: var(--font-mono); font-size: 0.72rem; color: #666; margin-bottom: 1rem; flex-wrap: wrap; }
-        .legend-item { display: flex; align-items: center; gap: 6px; }
-        .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
-        .peak-annotations { background: var(--surface-color); border: 1px solid #2a2a2a; padding: 1.5rem; }
-        .peak-title { font-family: var(--font-mono); font-size: 0.85rem; color: #fff; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid #333; }
-        .peak-item { margin-bottom: 1rem; padding: 0.75rem 1rem; border-left: 2px solid; }
-        .peak-item:last-child { margin-bottom: 0; }
-        .peak-high { border-color: var(--green); }
-        .peak-low { border-color: var(--red-bright); }
-        .peak-item-label { font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 1px; margin-bottom: 4px; }
-        .peak-high .peak-item-label { color: var(--green); }
-        .peak-low .peak-item-label { color: var(--red-bright); }
-        .peak-item-text { font-size: 0.85rem; color: #888; line-height: 1.5; font-style: italic; }
-
-        /* ── Readability ── */
-        .readability-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
-        .read-metric { background: var(--surface-color); border: 1px solid #2a2a2a; padding: 1.25rem; }
-        .read-metric-label { font-family: var(--font-mono); font-size: 0.68rem; color: #555; letter-spacing: 2px; margin-bottom: 6px; }
-        .read-metric-value { font-family: var(--font-mono); font-size: 1.4rem; font-weight: 700; margin-bottom: 4px; }
-        .read-metric-sub { font-family: var(--font-mono); font-size: 0.72rem; color: #666; }
-        .read-grade-easy { color: var(--green); }
-        .read-grade-mid { color: var(--amber); }
-        .read-grade-hard { color: var(--red-bright); }
-
-        .read-section { background: var(--surface-color); border: 1px solid #2a2a2a; padding: 1.5rem; margin-bottom: 1rem; }
-        .read-section-title { font-family: var(--font-mono); font-size: 0.85rem; color: #fff; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid #333; }
-
-        .read-bar-row { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.75rem; }
-        .read-bar-label { font-family: var(--font-mono); font-size: 0.72rem; color: #888; width: 160px; flex-shrink: 0; }
-        .read-bar-track { flex: 1; height: 6px; background: #111; position: relative; }
-        .read-bar-fill { height: 100%; transition: width 1s cubic-bezier(0.4,0,0.2,1); }
-        .read-bar-val { font-family: var(--font-mono); font-size: 0.72rem; color: #888; width: 50px; text-align: right; flex-shrink: 0; }
-
-        .dense-sentences { margin-top: 1rem; }
-        .dense-item { padding: 0.75rem 1rem; border-left: 2px solid var(--amber); margin-bottom: 0.75rem; }
-        .dense-item-meta { font-family: var(--font-mono); font-size: 0.68rem; color: var(--amber); margin-bottom: 4px; }
-        .dense-item-text { font-size: 0.85rem; color: #888; line-height: 1.5; font-style: italic; }
-
-        .vocab-words { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 0.75rem; }
-        .vocab-word { font-family: var(--font-mono); font-size: 0.72rem; padding: 3px 9px; background: #1a1918; border: 1px solid #333; color: #999; }
-        .vocab-word.complex { border-color: var(--amber); color: var(--amber); }
-
-        .read-verdict { padding: 1.25rem 1.5rem; border-left: 3px solid var(--steel-blue); background: rgba(74,127,165,0.05); margin-bottom: 1.5rem; }
-        .read-verdict-label { font-family: var(--font-mono); font-size: 0.7rem; color: var(--steel-blue); letter-spacing: 2px; margin-bottom: 6px; }
-        .read-verdict-text { font-size: 0.95rem; color: var(--text-offwhite); line-height: 1.6; }
-
-        /* ── Ticker ── */
-        .ticker-wrap { position: fixed; bottom: 0; width: 100%; background-color: var(--amber); height: 24px; overflow: hidden; z-index: 100; }
-        .ticker { display: inline-block; white-space: nowrap; padding-top: 4px; font-family: var(--font-mono); font-size: 0.75rem; color: #000; font-weight: 700; animation: ticker 30s linear infinite; }
-        @keyframes ticker { 0% { transform: translate3d(0,0,0); } 100% { transform: translate3d(-50%,0,0); } }
-
-        /* ── Responsive ── */
-        @media (max-width: 768px) {
-            .app-container { flex-direction: column; }
-            aside { width: 100%; height: auto; padding: 1rem; border-right: none; border-bottom: 1px solid #333; flex-direction: row; justify-content: space-between; align-items: center; position: relative; }
-            .nav-menu, .settings-box, .history-section-label, .history-entry { display: none; }
-            main { padding: 1.5rem; }
-            header { flex-direction: column; align-items: flex-start; gap: 1rem; }
-            .actions { flex-direction: column; width: 100%; }
-            .actions button { width: 100%; }
-            .scores-panel { grid-template-columns: 1fr 1fr; }
-            .compare-grid { grid-template-columns: 1fr; }
-            .compare-scores { grid-template-columns: 1fr 1fr; }
-        }
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:ital,wght@0,400;0,600;0,700;1,700&family=Share+Tech+Mono&family=Space+Grotesk:wght@400;600;700&family=Noto+Sans+JP:wght@700;900&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="css/styles.css">
 </head>
-<body>
-    <div class="tape-header"></div>
+<body class="tactical-hud nerv-mode">
+    <!-- Custom Cybernetic Crosshair Cursor -->
+    <div class="custom-cursor" id="customCursor"></div>
+    <div class="custom-cursor-dot" id="customCursorDot"></div>
 
-    <div class="app-container">
-        <aside>
-            <div class="logo-box">
-                <div class="logo-mark">PZ//</div>
-                <div class="case-number" id="case-id">CASE: #000000</div>
+    <!-- Scanline, CRT Flicker & Hexagonal AT-Field Background Overlays -->
+    <div class="scanlines-overlay"></div>
+    <div class="at-field-hex-bg"></div>
+    <div class="cyber-grid-bg"></div>
+    <div class="vignette-overlay"></div>
+
+    <!-- EMERGENCY ALERT BANNER -->
+    <div class="nerv-emergency-bar">
+        <div class="emergency-scroll">
+            <span>[緊急 A L E R T] MAGI-04 NEURAL LINK ESTABLISHED // PATTERN BLUE DETECTED // SYSTEM CODE RED // CLEARANCE LEVEL 5 REQUIRED // 特務機関 NERV ARCHITECTURE ACTIVE // </span>
+            <span>[緊急 A L E R T] MAGI-04 NEURAL LINK ESTABLISHED // PATTERN BLUE DETECTED // SYSTEM CODE RED // CLEARANCE LEVEL 5 REQUIRED // 特務機関 NERV ARCHITECTURE ACTIVE // </span>
+        </div>
+    </div>
+
+    <!-- MAIN NAVIGATION BAR -->
+    <header class="top-nav">
+        <div class="nav-container">
+            <div class="brand-badge">
+                <div class="hazard-block"></div>
+                <a href="#" class="brand-logo">
+                    <span class="brand-prefix">特務機関 MAGI-04</span>
+                    <span class="brand-title">MYSTERY ANALYZER</span>
+                </a>
             </div>
 
-            <ul class="nav-menu" id="nav-menu">
-                <li class="active" data-view="analyze">ANALYZE</li>
-                <li data-view="compare">COMPARE DRAFTS</li>
-                <li data-view="history">CASE HISTORY</li>
-                <li data-view="characters">CHARACTER MAP</li>
-                <li data-view="sentiment">TENSION ARC</li>
-                <li data-view="readability">READABILITY</li>
-            </ul>
+            <nav class="nav-links" id="navLinks">
+                <a href="#analyze" class="nav-item" data-module="analyze">
+                    <span class="nav-num">01</span> 解析 [ANALYZE]
+                </a>
+                <a href="#characters" class="nav-item" data-module="characters">
+                    <span class="nav-num">02</span> 人物 [CHARACTERS]
+                </a>
+                <a href="#compare" class="nav-item" data-module="compare">
+                    <span class="nav-num">03</span> 比較 [COMPARE]
+                </a>
+                <a href="#analytics" class="nav-item" data-module="analytics">
+                    <span class="nav-num">04</span> 統計 [ANALYTICS]
+                </a>
+            </nav>
 
-            <div class="history-section-label">RECENT CASES</div>
-            <div id="sidebar-history"></div>
-
-            <div class="stats-section-label">FIELD STATS</div>
-            <div id="sidebar-stats">
-                <div class="stats-row"><span class="stats-row-label">ANALYSES</span><span class="stats-row-value" id="stat-analyze">—</span></div>
-                <div class="stats-row"><span class="stats-row-label">COMPARISONS</span><span class="stats-row-value" id="stat-compare">—</span></div>
-                <div class="stats-row"><span class="stats-row-label">CHAR MAPS</span><span class="stats-row-value" id="stat-characters">—</span></div>
-                <div class="stats-row"><span class="stats-row-label">TENSION ARCS</span><span class="stats-row-value" id="stat-sentiment">—</span></div>
-                <div class="stats-row"><span class="stats-row-label">READABILITY</span><span class="stats-row-value" id="stat-readability">—</span></div>
-                <div class="stats-total">TOTAL VISITS: <span id="stat-visits">—</span></div>
-            </div>
-
-            <div class="settings-box">
-                <input type="checkbox" id="audio-toggle">
-                <label for="audio-toggle">Audio</label>
-            </div>
-        </aside>
-
-        <main>
-            <header>
-                <h1>PATTERN ZERO LAB</h1>
+            <div class="nav-actions">
+                <div class="sync-rate-badge">
+                    <span class="sync-label">SYNC RATE</span>
+                    <span class="sync-val" id="syncRateVal">99.8%</span>
+                </div>
                 <div class="status-indicator">
-                    <div class="blink-dot" id="status-dot"></div>
-                    <span id="status-text">SYSTEM READY</span>
+                    <span class="status-pulse"></span>
+                    <span class="status-text">MAGI STATUS: <strong class="status-online">ONLINE</strong></span>
                 </div>
-            </header>
-
-            <!-- ── VIEW: ANALYZE ── -->
-            <div class="view active" id="view-analyze">
-                <div class="view-label">// SINGLE CHAPTER ANALYSIS</div>
-                <div class="editor-container">
-                    <textarea id="chapter-input" placeholder="[PASTE MANUSCRIPT EVIDENCE HERE]"></textarea>
-                </div>
-                <div class="editor-footer">
-                    <div class="word-count">EVIDENCE: <span id="word-count">0</span> WORDS</div>
-                    <div class="actions">
-                        <button class="btn-clear" onclick="clearEvidence()">CLEAR FILE</button>
-                        <button class="btn-analyze" id="analyze-btn" onclick="analyze()">SUBMIT FOR ANALYSIS</button>
-                    </div>
-                </div>
-                <div id="loading-state" class="loading-state">[ ANALYZING EVIDENCE... ]</div>
-                <div id="error-state" class="error-state"></div>
-                <div id="results-section"></div>
+                <button class="mobile-toggle" id="mobileMenuBtn" aria-label="Toggle Navigation">
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                </button>
             </div>
+        </div>
+    </header>
 
-            <!-- ── VIEW: COMPARE DRAFTS ── -->
-            <div class="view" id="view-compare">
-                <div class="view-label">// DRAFT COMPARISON — PASTE TWO VERSIONS OF THE SAME SCENE</div>
-                <div class="compare-grid">
-                    <div>
-                        <div class="draft-label">DRAFT 1 — ORIGINAL</div>
-                        <div class="editor-container">
-                            <textarea id="draft1-input" placeholder="[PASTE DRAFT 1 HERE]"></textarea>
+    <main id="mainContent">
+        <!-- HERO SECTION (RESTORED CLEAN 2-COLUMN LAYOUT) -->
+        <section class="hero-section" id="hero">
+            <div class="hero-container">
+                <div class="hero-content">
+                    <div class="tactical-header-tag">
+                        <span class="tag-bracket">[</span>
+                        <span class="tag-label">思考形態: 審議中 // MAGI TRIPLE SYSTEM ACTIVE</span>
+                        <span class="tag-bracket">]</span>
+                    </div>
+
+                    <h1 class="hero-title glitch-text" data-text="EVERY MYSTERY LEAVES A PATTERN.">
+                        EVERY MYSTERY<br>
+                        <span class="highlight-alert">LEAVES A PATTERN.</span>
+                    </h1>
+
+                    <div class="kanji-sub-header">全領域異常検出システム・パターン解析</div>
+
+                    <p class="hero-subtitle">
+                        Analyze the story. Understand the characters. Find what others missed.
+                    </p>
+
+                    <p class="hero-description">
+                        Mystery Analyzer uses AI-assisted analysis to examine mysteries, narratives, characters, relationships, clues, and hidden patterns across complex data streams.
+                    </p>
+
+                    <div class="hero-cta-group">
+                        <button class="btn btn-primary activate-btn magi-btn" id="heroPrimaryCta">
+                            <span class="btn-hazard-stripe"></span>
+                            <span class="btn-text">BEGIN ANALYSIS // 起動</span>
+                            <span class="btn-icon">⚡</span>
+                        </button>
+                        
+                        <a href="#system" class="btn btn-secondary">
+                            <span class="btn-text">EXPLORE THE SYSTEM</span>
+                            <span class="btn-arrow">↓</span>
+                        </a>
+                    </div>
+
+                    <!-- MAGI 3-WAY CONSENSUS PANEL -->
+                    <div class="magi-consensus-panel">
+                        <div class="magi-core-box melchior">
+                            <div class="magi-name">MELCHIOR-1</div>
+                            <div class="magi-vote approved">APPROVED</div>
+                            <div class="magi-sub">LOGIC CORE</div>
+                        </div>
+                        <div class="magi-core-box balthasar">
+                            <div class="magi-name">BALTHASAR-2</div>
+                            <div class="magi-vote approved">APPROVED</div>
+                            <div class="magi-sub">ANALYTICS CORE</div>
+                        </div>
+                        <div class="magi-core-box caspar">
+                            <div class="magi-name">CASPAR-3</div>
+                            <div class="magi-vote approved">APPROVED</div>
+                            <div class="magi-sub">PATTERN CORE</div>
                         </div>
                     </div>
-                    <div>
-                        <div class="draft-label">DRAFT 2 — REVISED</div>
-                        <div class="editor-container">
-                            <textarea id="draft2-input" placeholder="[PASTE DRAFT 2 HERE]"></textarea>
+
+                    <div class="hero-telemetry-strip">
+                        <div class="telemetry-item">
+                            <span class="telemetry-label">AT-FIELD RESONANCE</span>
+                            <span class="telemetry-val">HARMONIC 99.8%</span>
+                        </div>
+                        <div class="telemetry-divider"></div>
+                        <div class="telemetry-item">
+                            <span class="telemetry-label">INTERNAL POWER</span>
+                            <span class="telemetry-val text-green">05:00:00 UNLIMITED</span>
+                        </div>
+                        <div class="telemetry-divider"></div>
+                        <div class="telemetry-item">
+                            <span class="telemetry-label">SECURITY LEVEL</span>
+                            <span class="telemetry-val text-red">TOP SECRET // 極秘</span>
                         </div>
                     </div>
                 </div>
-                <div class="actions" style="justify-content:flex-end; margin-bottom:1rem;">
-                    <button class="btn-clear" onclick="clearCompare()">CLEAR</button>
-                    <button class="btn-analyze" id="compare-btn" onclick="compareDrafts()">COMPARE DRAFTS</button>
-                </div>
-                <div id="compare-loading" class="loading-state">[ CROSS-REFERENCING EVIDENCE... ]</div>
-                <div id="compare-error" class="error-state"></div>
-                <div id="compare-results"></div>
-            </div>
 
-            <!-- ── VIEW: HISTORY ── -->
-            <div class="view" id="view-history">
-                <div class="view-label">// CASE HISTORY — LAST 5 ANALYSES</div>
-                <div id="history-results"></div>
-                <div id="history-expanded"></div>
-            </div>
-
-            <!-- ── VIEW: CHARACTER MAP ── -->
-            <div class="view" id="view-characters">
-                <div class="view-label">// CHARACTER CONSISTENCY MAP — PASTE UP TO 5 CHAPTERS</div>
-                <div class="chapter-inputs" id="chapter-inputs">
-                    <div class="chapter-block" data-index="0">
-                        <div class="chapter-block-label">
-                            <span>CHAPTER 1</span>
+                <!-- HERO VISUAL: CASE ANALYSIS HUD -->
+                <div class="hero-visual-wrapper">
+                    <div class="hud-frame nerv-frame">
+                        <div class="hud-header-bar">
+                            <span class="hud-title">特務機関 NERV // TARGET RESOLUTION HUD</span>
+                            <div class="hud-controls">
+                                <span class="hud-dot red"></span>
+                                <span class="hud-dot yellow"></span>
+                                <span class="hud-dot green"></span>
+                            </div>
                         </div>
-                        <div class="editor-container">
-                            <textarea class="chapter-textarea" placeholder="[PASTE CHAPTER 1 HERE]"></textarea>
+
+                        <!-- Canvas Case Analyzer Node Graph -->
+                        <div class="hud-canvas-container">
+                            <canvas id="heroVisualCanvas"></canvas>
+                            
+                            <!-- Dynamic HUD Overlays -->
+                            <div class="hud-alert-badge animate-pulse-alert">
+                                <span class="alert-icon">⚠️</span>
+                                <span class="alert-text">EMERGENCY: PATTERN BLUE DETECTED</span>
+                            </div>
+
+                            <div class="hud-readout-panel">
+                                <div class="readout-row">
+                                    <span>TARGET NODE:</span> <strong id="hudSelectedNode">SUBJECT A (Dr. Vance)</strong>
+                                </div>
+                                <div class="readout-row">
+                                    <span>PROBABILITY:</span> <strong id="hudNodeProb" class="text-orange">87.4% MATCH</strong>
+                                </div>
+                                <div class="readout-row">
+                                    <span>AT-FIELD HARMONIC:</span> <strong class="text-green">SYNCHRONIZED</strong>
+                                </div>
+                            </div>
+
+                            <!-- Waveform Signal Box -->
+                            <div class="hud-waveform-box">
+                                <div class="waveform-title">NEURAL FREQUENCY WAVE</div>
+                                <div class="waveform-bars" id="waveformBars">
+                                    <!-- Populated dynamically via JS -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="hud-footer-bar">
+                            <span class="hud-coord">GEO-FRONT TOKYO-03 // SUB-LEVEL 22</span>
+                            <span class="hud-scan-status">SWEEP SCANNING...</span>
                         </div>
                     </div>
                 </div>
-                <button class="btn-add-chapter" id="add-chapter-btn" onclick="addChapter()">+ ADD ANOTHER CHAPTER</button>
-                <div class="actions" style="justify-content:flex-end; margin-bottom:1rem;">
-                    <button class="btn-clear" onclick="clearCharacters()">CLEAR</button>
-                    <button class="btn-analyze" id="characters-btn" onclick="analyzeCharacters()">BUILD CHARACTER MAP</button>
-                </div>
-                <div id="characters-loading" class="loading-state">[ BUILDING DOSSIERS... ]</div>
-                <div id="characters-error" class="error-state"></div>
-                <div id="character-results"></div>
             </div>
+        </section>
 
-            <!-- ── VIEW: SENTIMENT ARC ── -->
-            <div class="view" id="view-sentiment">
-                <div class="view-label">// TENSION ARC — LOCAL NLP, NO API, INSTANT RESULTS</div>
-                <div class="sentiment-intro">
-                    Analyzes emotional tension across your chapter using a <span>2,477-word sentiment lexicon</span> running entirely in your browser.
-                    No API call. No cost. Results are instant.<br><br>
-                    Paste a chapter below and see where your tension peaks, where it drops, and where readers might disengage.
+        <!-- SECTION: THE SYSTEM -->
+        <section class="system-section" id="system">
+            <div class="section-container">
+                <div class="section-header center-align">
+                    <div class="tactical-badge">MAGI SUB-MODULES // 機関モジュール</div>
+                    <h2 class="section-title">THE SYSTEM SEES WHAT YOU MISS.</h2>
+                    <p class="section-subtext">Four interconnected intelligence engines working in unison to deconstruct mystery structures.</p>
                 </div>
-                <div class="editor-container">
-                    <textarea id="sentiment-input" placeholder="[PASTE CHAPTER HERE FOR TENSION ANALYSIS]"></textarea>
-                </div>
-                <div class="editor-footer">
-                    <div class="word-count">EVIDENCE: <span id="sentiment-word-count">0</span> WORDS</div>
-                    <div class="actions">
-                        <button class="btn-clear" onclick="clearSentiment()">CLEAR</button>
-                        <button class="btn-analyze" onclick="analyzeSentiment()">PLOT TENSION ARC</button>
+
+                <div class="system-cards-grid">
+                    <!-- CARD 01: ANALYZE -->
+                    <div class="system-card nerv-card" data-module="analyze">
+                        <div class="card-corner corner-tl"></div>
+                        <div class="card-corner corner-tr"></div>
+                        <div class="card-corner corner-bl"></div>
+                        <div class="card-corner corner-br"></div>
+
+                        <div class="card-header">
+                            <span class="card-num">01</span>
+                            <span class="card-tag">ENGINE_ANALYZE // 解析</span>
+                        </div>
+
+                        <div class="card-body">
+                            <h3 class="card-title">ANALYZE</h3>
+                            <p class="card-desc">
+                                Break down a mystery or narrative into clues, events, inconsistencies, motives, and hidden patterns.
+                            </p>
+                        </div>
+
+                        <div class="card-footer">
+                            <div class="card-specs">
+                                <span>NLP DECONSTRUCTION</span>
+                                <span>PATTERN EXTRACTION</span>
+                            </div>
+                            <button class="card-btn open-module-btn" data-module="analyze">
+                                ACCESS MODULE <span class="btn-arrow">→</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- CARD 02: CHARACTERS -->
+                    <div class="system-card nerv-card" data-module="characters">
+                        <div class="card-corner corner-tl"></div>
+                        <div class="card-corner corner-tr"></div>
+                        <div class="card-corner corner-bl"></div>
+                        <div class="card-corner corner-br"></div>
+
+                        <div class="card-header">
+                            <span class="card-num">02</span>
+                            <span class="card-tag">ENGINE_CHARACTERS // 人物</span>
+                        </div>
+
+                        <div class="card-body">
+                            <h3 class="card-title">CHARACTERS</h3>
+                            <p class="card-desc">
+                                Analyze characters, their motivations, personalities, relationships, behavior, and potential connections to the mystery.
+                            </p>
+                        </div>
+
+                        <div class="card-footer">
+                            <div class="card-specs">
+                                <span>BEHAVIOR MATRIX</span>
+                                <span>MOTIVE MAPPING</span>
+                            </div>
+                            <button class="card-btn open-module-btn" data-module="characters">
+                                ACCESS MODULE <span class="btn-arrow">→</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- CARD 03: COMPARE -->
+                    <div class="system-card nerv-card" data-module="compare">
+                        <div class="card-corner corner-tl"></div>
+                        <div class="card-corner corner-tr"></div>
+                        <div class="card-corner corner-bl"></div>
+                        <div class="card-corner corner-br"></div>
+
+                        <div class="card-header">
+                            <span class="card-num">03</span>
+                            <span class="card-tag">ENGINE_COMPARE // 比較</span>
+                        </div>
+
+                        <div class="card-body">
+                            <h3 class="card-title">COMPARE</h3>
+                            <p class="card-desc">
+                                Compare characters, theories, evidence, and interpretations to uncover similarities, contradictions, and differences.
+                            </p>
+                        </div>
+
+                        <div class="card-footer">
+                            <div class="card-specs">
+                                <span>DIFFERENTIAL PROFILING</span>
+                                <span>ALIBI VALIDATION</span>
+                            </div>
+                            <button class="card-btn open-module-btn" data-module="compare">
+                                ACCESS MODULE <span class="btn-arrow">→</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- CARD 04: ANALYTICS -->
+                    <div class="system-card nerv-card" data-module="analytics">
+                        <div class="card-corner corner-tl"></div>
+                        <div class="card-corner corner-tr"></div>
+                        <div class="card-corner corner-bl"></div>
+                        <div class="card-corner corner-br"></div>
+
+                        <div class="card-header">
+                            <span class="card-num">04</span>
+                            <span class="card-tag">ENGINE_ANALYTICS // 統計</span>
+                        </div>
+
+                        <div class="card-body">
+                            <h3 class="card-title">ANALYTICS</h3>
+                            <p class="card-desc">
+                                Visualize insights and patterns discovered during analysis through a futuristic data-driven interface.
+                            </p>
+                        </div>
+
+                        <div class="card-footer">
+                            <div class="card-specs">
+                                <span>PROBABILITY MAP</span>
+                                <span>TIMELINE GRAPH</span>
+                            </div>
+                            <button class="card-btn open-module-btn" data-module="analytics">
+                                ACCESS MODULE <span class="btn-arrow">→</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
-                <div id="sentiment-error" class="error-state"></div>
-                <div id="sentiment-chart-wrap">
-                    <div class="sentiment-stats" id="sentiment-stats"></div>
-                    <div class="sentiment-legend">
-                        <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div> High tension / dark</div>
-                        <div class="legend-item"><div class="legend-dot" style="background:var(--steel-blue)"></div> Neutral / calm</div>
-                        <div class="legend-item"><div class="legend-dot" style="background:#888"></div> Segment boundary</div>
-                    </div>
-                    <div id="sentiment-svg-container"></div>
-                    <div class="peak-annotations" id="peak-annotations"></div>
+            </div>
+        </section>
+
+        <!-- HOMEPAGE LIVE GLOBAL STATS STRIP -->
+        <section class="homepage-stats-section">
+            <div class="section-container">
+                <div class="stats-section-header">
+                    <div class="tactical-badge">MAGI GLOBAL TELEMETRY // 統計システム</div>
+                    <h2 class="section-title">WORLDWIDE OPERATIONS METRICS</h2>
+                    <p class="section-subtext">Live counters powered by Upstash Redis. Deploy to Vercel to see real-time values.</p>
                 </div>
-                <div class="sentiment-tooltip" id="sentiment-tooltip">
-                    <div class="tooltip-score" id="tooltip-score"></div>
-                    <div class="tooltip-text" id="tooltip-text"></div>
+                <div class="homepage-stats-grid">
+                    <div class="hp-stat-card">
+                        <div class="hp-stat-icon">🌐</div>
+                        <div class="hp-stat-number" id="hpStatVisits">—</div>
+                        <div class="hp-stat-label">TOTAL VISITS WORLDWIDE</div>
+                    </div>
+                    <div class="hp-stat-card">
+                        <div class="hp-stat-icon">🔍</div>
+                        <div class="hp-stat-number" id="hpStatAnalyses">—</div>
+                        <div class="hp-stat-label">ANALYSES COMPLETED</div>
+                    </div>
+                    <div class="hp-stat-card">
+                        <div class="hp-stat-icon">⚖️</div>
+                        <div class="hp-stat-number" id="hpStatCompares">—</div>
+                        <div class="hp-stat-label">DRAFTS COMPARED</div>
+                    </div>
+                    <div class="hp-stat-card">
+                        <div class="hp-stat-icon">🧠</div>
+                        <div class="hp-stat-number" id="hpStatCharMaps">—</div>
+                        <div class="hp-stat-label">CHARACTER MAPS GENERATED</div>
+                    </div>
+                    <div class="hp-stat-card">
+                        <div class="hp-stat-icon">📈</div>
+                        <div class="hp-stat-number" id="hpStatArcs">—</div>
+                        <div class="hp-stat-label">TENSION ARCS PRODUCED</div>
+                    </div>
                 </div>
             </div>
+        </section>
 
-            <!-- ── VIEW: READABILITY ── -->
-            <div class="view" id="view-readability">
-                <div class="view-label">// READABILITY & COMPLEXITY — LOCAL ANALYSIS, NO API</div>
-                <div class="sentiment-intro">
-                    Computes <span>Flesch-Kincaid Grade Level</span>, <span>Gunning Fog Index</span>, average sentence length,
-                    vocabulary diversity, and dialogue density — all locally in your browser.
-                    Tells you exactly how hard your prose is to read and where it gets dense.
+        <!-- SECTION: HOW IT WORKS -->
+        <section class="how-it-works-section" id="how-it-works">
+            <div class="section-container">
+                <div class="section-header">
+                    <div class="tactical-badge">EXECUTION PROTOCOL // 実行プロトコル</div>
+                    <h2 class="section-title">THE ANALYSIS PROTOCOL</h2>
                 </div>
-                <div class="editor-container">
-                    <textarea id="readability-input" placeholder="[PASTE CHAPTER HERE FOR READABILITY ANALYSIS]"></textarea>
-                </div>
-                <div class="editor-footer">
-                    <div class="word-count">EVIDENCE: <span id="readability-word-count">0</span> WORDS</div>
-                    <div class="actions">
-                        <button class="btn-clear" onclick="clearReadability()">CLEAR</button>
-                        <button class="btn-analyze" onclick="analyzeReadability()">ANALYZE READABILITY</button>
+
+                <div class="timeline-wrapper">
+                    <!-- Animated Connection Line -->
+                    <div class="timeline-line">
+                        <div class="timeline-pulse-beam"></div>
+                    </div>
+
+                    <div class="timeline-grid">
+                        <div class="timeline-step">
+                            <div class="step-badge">01</div>
+                            <div class="step-content">
+                                <h3 class="step-title">01 — INPUT [入力]</h3>
+                                <p class="step-desc">Enter your mystery, case, narrative, or evidence.</p>
+                            </div>
+                        </div>
+
+                        <div class="timeline-step">
+                            <div class="step-badge">02</div>
+                            <div class="step-content">
+                                <h3 class="step-title">02 — ANALYZE [解析]</h3>
+                                <p class="step-desc">The system processes the information and identifies relevant details.</p>
+                            </div>
+                        </div>
+
+                        <div class="timeline-step">
+                            <div class="step-badge">03</div>
+                            <div class="step-content">
+                                <h3 class="step-title">03 — CONNECT [結合]</h3>
+                                <p class="step-desc">Characters, clues, events, and relationships are mapped together.</p>
+                            </div>
+                        </div>
+
+                        <div class="timeline-step">
+                            <div class="step-badge">04</div>
+                            <div class="step-content">
+                                <h3 class="step-title">04 — DISCOVER [発見]</h3>
+                                <p class="step-desc">Explore patterns, contradictions, and insights that may not be obvious at first glance.</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div id="readability-error" class="error-state"></div>
-                <div id="readability-results" style="display:none; margin-top:2rem;"></div>
+            </div>
+        </section>
+
+        <!-- PSYCHOLOGICAL SECTION -->
+        <section class="psychological-section nerv-psych">
+            <div class="psych-grid-bg"></div>
+            <div class="section-container">
+                <div class="psych-content-box">
+                    <div class="warning-stripes-top"></div>
+                    <h2 class="psych-title glitch-text" data-text="THE TRUTH IS NEVER JUST ONE ANSWER.">
+                        THE TRUTH IS NEVER<br>
+                        <span class="highlight-orange">JUST ONE ANSWER.</span>
+                    </h2>
+                    <div class="kanji-large-bg">真実一覧</div>
+                    <p class="psych-desc">
+                        Mysteries are built from perspective, motive, memory, and evidence. Mystery Analyzer helps you examine the entire structure — not just the surface.
+                    </p>
+                    <div class="psych-quote-badge">
+                        <span class="quote-symbol">“</span>
+                        <span>DECONSTRUCT THE NARRATIVE. UNCOVER THE ANOMALY.</span>
+                        <span class="quote-symbol">”</span>
+                    </div>
+                    <div class="warning-stripes-bottom"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FEATURED ANALYSIS INTERFACE PREVIEW -->
+        <section class="terminal-preview-section">
+            <div class="section-container">
+                <div class="section-header center-align">
+                    <div class="tactical-badge">INVESTIGATION TERMINAL // 調査端末</div>
+                    <h2 class="section-title">CLASSIFIED TERMINAL PREVIEW</h2>
+                    <p class="section-subtext">Interactive digital investigation console with real-time anomaly metrics.</p>
+                </div>
+
+                <div class="terminal-container nerv-terminal">
+                    <div class="terminal-top-bar">
+                        <div class="terminal-brand">
+                            <span class="terminal-icon">🗲</span> MAGI-04 // CLASSIFIED NERV TERMINAL
+                        </div>
+                        <div class="terminal-meta">
+                            <span>SESSION: SECURE-TLS1.3</span>
+                            <span>NODE: TOKYO-03</span>
+                        </div>
+                    </div>
+
+                    <div class="terminal-body">
+                        <div class="terminal-sidebar">
+                            <div class="telemetry-card">
+                                <div class="card-label">CASE IDENTIFIER</div>
+                                <div class="card-value-highlight" id="caseIdVal">CASE ID: MX-047</div>
+                            </div>
+                            <div class="telemetry-card">
+                                <div class="card-label">SYSTEM STATUS</div>
+                                <div class="card-value-status">STATUS: ACTIVE</div>
+                            </div>
+                            <div class="telemetry-card">
+                                <div class="card-label">ANALYSIS PROGRESS</div>
+                                <div class="progress-bar-container">
+                                    <div class="progress-bar-fill" id="terminalProgressFill" style="width: 87%;"></div>
+                                </div>
+                                <div class="card-value-small">ANALYSIS: <strong id="progressText">87% COMPLETE</strong></div>
+                            </div>
+
+                            <div class="terminal-controls-group">
+                                <div class="control-label">INTERACTIVE THRESHOLD ADAPTER</div>
+                                <label for="anomalySensitivity">Anomaly Sensitivity: <span id="sensitivityVal">Medium</span></label>
+                                <input type="range" id="anomalySensitivity" min="1" max="5" value="3" class="slider-input">
+                            </div>
+                        </div>
+
+                        <div class="terminal-main-display">
+                            <div class="terminal-data-grid">
+                                <div class="data-box">
+                                    <div class="box-title">CHARACTERS:</div>
+                                    <ul class="subject-list" id="subjectList">
+                                        <li class="subject-item active" data-subject="A">
+                                            <span class="subj-tag">[SUBJECT A]</span>
+                                            <span class="subj-name">Dr. Vance (Key Motive)</span>
+                                            <span class="subj-risk high">HIGH THREAT</span>
+                                        </li>
+                                        <li class="subject-item" data-subject="B">
+                                            <span class="subj-tag">[SUBJECT B]</span>
+                                            <span class="subj-name">Elena Rostova (Witness)</span>
+                                            <span class="subj-risk med">MODERATE</span>
+                                        </li>
+                                        <li class="subject-item" data-subject="C">
+                                            <span class="subj-tag">[SUBJECT C]</span>
+                                            <span class="subj-name">Officer Chen (Alibi Fault)</span>
+                                            <span class="subj-risk high">CRITICAL</span>
+                                        </li>
+                                    </ul>
+                                </div>
+
+                                <div class="data-box metrics-box">
+                                    <div class="box-title">PATTERN METRICS</div>
+                                    <div class="metric-row">
+                                        <span>CLUE CONNECTIONS:</span>
+                                        <strong class="text-neon-orange" id="metricClues">47</strong>
+                                    </div>
+                                    <div class="metric-row">
+                                        <span>ANOMALIES:</span>
+                                        <strong class="text-alert-red" id="metricAnomalies">03</strong>
+                                    </div>
+                                    <div class="metric-row">
+                                        <span>CONFIDENCE:</span>
+                                        <strong class="text-green" id="metricConfidence">82%</strong>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="terminal-console-stream">
+                                <div class="stream-header">> SYSTEM LOG OUTPUT STREAMS // ログ出力</div>
+                                <div class="stream-output" id="terminalLogStream">
+                                    <div class="log-line">[00:14:02] INITIALIZING CASE MX-047 NEURAL DECONSTRUCTION...</div>
+                                    <div class="log-line">[00:14:03] CROSS-REFERENCING SUBJECT A & SUBJECT C TIMELINES...</div>
+                                    <div class="log-line warning">[00:14:04] ANOMALY #01: TIME DISCREPANCY AT SUBSTATION 04 (12 MIN DELAY)</div>
+                                    <div class="log-line warning">[00:14:05] ANOMALY #02: ENCRYPTED TRANSCRIPT PATTERN MATCH FOUND</div>
+                                    <div class="log-line success">[00:14:06] CONFIDENCE SCORE STABILIZED AT 82%. READY FOR QUERY.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="terminal-footer-bar">
+                        <span>DATA ENCRYPTION: AES-256-GCM</span>
+                        <span>CONFIDENTIAL INFORMATION // FOR AUTHORIZED PERSONNEL ONLY</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FINAL CTA SECTION -->
+        <section class="final-cta-section">
+            <div class="section-container center-align">
+                <div class="cta-card nerv-cta">
+                    <div class="hazard-border-top"></div>
+                    <h2 class="final-cta-title">READY TO FIND THE PATTERN?</h2>
+                    <p class="final-cta-subtext">The case is waiting.</p>
+                    <button class="btn btn-primary btn-large activate-btn magi-btn" id="finalCtaBtn">
+                        <span class="btn-text">BEGIN ANALYSIS → // 起動</span>
+                    </button>
+                    <div class="hazard-border-bottom"></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- INTERACTIVE WORKBENCH MODAL -->
+    <div class="modal-overlay" id="moduleModal">
+        <div class="modal-window nerv-modal">
+            <div class="modal-header">
+                <div class="modal-title-group">
+                    <span class="modal-badge" id="modalBadge">ENGINE_MODULE</span>
+                    <h3 class="modal-title" id="modalTitle">MODULE WORKBENCH</h3>
+                </div>
+                <button class="modal-close" id="modalCloseBtn" aria-label="Close Workbench">&times;</button>
+            </div>
+            
+            <div class="modal-body" id="modalBody">
+                <!-- Dynamically populated -->
             </div>
 
-        </main>
+            <div class="modal-footer">
+                <span id="modalFooterStatus">MAGI-04 // ACTIVE WORKBENCH SESSION</span>
+                <button class="btn btn-secondary btn-sm" id="modalCloseFooter">CLOSE</button>
+            </div>
+        </div>
     </div>
 
-    <div class="ticker-wrap">
-        <div class="ticker">PATTERN ZERO LAB • FORENSIC LITERARY ANALYSIS • CONFIDENTIAL • DO NOT DISTRIBUTE • PATTERN ZERO LAB • FORENSIC LITERARY ANALYSIS • CONFIDENTIAL • DO NOT DISTRIBUTE • PATTERN ZERO LAB • FORENSIC LITERARY ANALYSIS • CONFIDENTIAL • </div>
-    </div>
+    <!-- TECHNICAL FOOTER -->
+    <footer class="main-footer">
+        <div class="footer-container">
+            <div class="footer-left">
+                <div class="footer-brand">MYSTERY ANALYZER // 特務機関 NERV ARCHITECTURE</div>
+                <div class="footer-copyright">SYSTEM STATUS: OPERATIONAL</div>
+            </div>
+            <div class="footer-right">
+                <div class="footer-status">
+                    <span class="status-pulse green"></span>
+                    <span class="footer-status-text">MAGI STATUS: <strong>OPERATIONAL</strong></span>
+                </div>
+                <button class="scanline-toggle-btn" id="scanlineToggleBtn">TOGGLE SCANLINES</button>
+            </div>
+        </div>
+    </footer>
 
+    <!-- PDF.js — loaded before app scripts so it's available -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+    <!-- JavaScript Module Files -->
+    <script src="js/canvas-visualizer.js"></script>
+    <script src="js/nlp-engine.js"></script>
+    <script src="js/analyse.js"></script>
+    <script src="js/characters.js"></script>
+    <script src="js/compare.js"></script>
+    <script src="js/analytics.js"></script>
+    <script src="js/main.js"></script>    <!-- PZL LIVE PATCH: PDF fix + real characters + live terminal
+         Strategy: observe, never intercept. Runs AFTER all antigravity scripts. -->
     <script>
-        // ── Audio ──
-        let audioCtx;
-        function initAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
-        function playTypewriterClick() {
-            if (!document.getElementById('audio-toggle').checked) return;
-            initAudio();
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.type = 'square';
-            osc.frequency.setValueAtTime(150 + Math.random() * 50, audioCtx.currentTime);
-            gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.05);
-            osc.connect(gain); gain.connect(audioCtx.destination);
-            osc.start(); osc.stop(audioCtx.currentTime + 0.05);
+    window.addEventListener('load', function() {
+
+        // ─── SETUP PDF.js worker ───────────────────────────────────────
+        if (typeof pdfjsLib !== 'undefined') {
+            pdfjsLib.GlobalWorkerOptions.workerSrc =
+                'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
         }
 
-        // ── Refs ──
-        const textarea = document.getElementById('chapter-input');
-        const wordCountEl = document.getElementById('word-count');
-        const statusDot = document.getElementById('status-dot');
-        const statusText = document.getElementById('status-text');
-        let exhibitCounter = 1;
+        // ─── PDF FIX ───────────────────────────────────────────────────
+        // Watch for file inputs appearing (antigravity creates them dynamically in modal)
+        // and patch them with PDF.js extraction WITHOUT blocking antigravity's handler
+        function patchFileInput(input) {
+            if (input._pzlPatched) return;
+            input._pzlPatched = true;
+            input.addEventListener('change', async function() {
+                const file = this.files && this.files[0];
+                if (!file || !file.name.toLowerCase().endsWith('.pdf')) return;
+                if (typeof pdfjsLib === 'undefined') return;
 
-        // ── Init ──
-        document.getElementById('case-id').innerText = `CASE: #${Math.floor(Math.random() * 900000 + 100000)}`;
-        textarea.addEventListener('input', () => {
-            const w = textarea.value.trim().split(/\s+/).filter(Boolean).length;
-            wordCountEl.innerText = w;
-        });
+                try {
+                    const buf  = await file.arrayBuffer();
+                    const pdf  = await pdfjsLib.getDocument({ data: buf }).promise;
+                    let text   = '';
+                    for (let i = 1; i <= pdf.numPages; i++) {
+                        const page    = await pdf.getPage(i);
+                        const content = await page.getTextContent();
+                        text += content.items.map(function(it){ return it.str; }).join(' ') + '\n\n';
+                    }
+                    text = text.trim();
 
-        // ── Navigation ──
-        document.getElementById('nav-menu').addEventListener('click', e => {
-            const li = e.target.closest('li');
-            if (!li) return;
-            const view = li.dataset.view;
-            document.querySelectorAll('.nav-menu li').forEach(el => el.classList.remove('active'));
-            li.classList.add('active');
-            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-            document.getElementById('view-' + view).classList.add('active');
-            if (view === 'history') renderHistoryView();
-        });
-
-        // Sidebar history entries also navigate
-        document.getElementById('sidebar-history').addEventListener('click', e => {
-            const entry = e.target.closest('.history-entry');
-            if (!entry) return;
-            const id = entry.dataset.id;
-            switchToHistoryAndExpand(id);
-        });
-
-        function switchToHistoryAndExpand(id) {
-            document.querySelectorAll('.nav-menu li').forEach(el => el.classList.remove('active'));
-            document.querySelector('[data-view="history"]').classList.add('active');
-            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-            document.getElementById('view-history').classList.add('active');
-            renderHistoryView();
-            expandHistoryEntry(id);
-        }
-
-        // ── Local Storage History ──
-        const HISTORY_KEY = 'pzl_history';
-
-        function getHistory() {
-            try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); }
-            catch { return []; }
-        }
-
-        function saveToHistory(text, result) {
-            const history = getHistory();
-            const entry = {
-                id: `#${Math.floor(Math.random() * 900000 + 100000)}`,
-                date: new Date().toLocaleString('en-IN', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' }),
-                preview: text.trim().slice(0, 90) + '...',
-                wordCount: text.trim().split(/\s+/).filter(Boolean).length,
-                result
-            };
-            history.unshift(entry);
-            const trimmed = history.slice(0, 5);
-            localStorage.setItem(HISTORY_KEY, JSON.stringify(trimmed));
-            renderSidebarHistory();
-            return entry.id;
-        }
-
-        function renderSidebarHistory() {
-            const history = getHistory();
-            const container = document.getElementById('sidebar-history');
-            if (history.length === 0) {
-                container.innerHTML = '<div class="history-empty">NO PRIOR CASES</div>';
-                return;
-            }
-            container.innerHTML = history.map(e => `
-                <div class="history-entry" data-id="${e.id}">
-                    <div class="history-entry-id">${e.id}</div>
-                    <div class="history-entry-date">${e.date}</div>
-                    <div class="history-entry-preview">${e.preview}</div>
-                </div>`).join('');
-        }
-
-        function renderHistoryView() {
-            const history = getHistory();
-            const container = document.getElementById('history-results');
-            document.getElementById('history-expanded').style.display = 'none';
-            if (history.length === 0) {
-                container.innerHTML = '<div class="history-empty-state">[ NO PRIOR CASES ON FILE ]</div>';
-                return;
-            }
-            const scoreColor = v => v === 'Strong' ? 'color:var(--green)' : v === 'Good' ? 'color:var(--steel-blue)' : v === 'Fair' ? 'color:var(--amber)' : 'color:var(--red-bright)';
-            container.innerHTML = `<button class="history-clear-btn" onclick="clearHistory()">PURGE ALL RECORDS</button>` +
-                history.map(e => `
-                <div class="history-case-card" onclick="expandHistoryEntry('${e.id}')">
-                    <div class="history-case-header">
-                        <div class="history-case-id">CASE ${e.id}</div>
-                        <div class="history-case-date">${e.date} · ${e.wordCount} words</div>
-                    </div>
-                    <div class="history-case-preview">"${e.preview}"</div>
-                    <div class="history-case-scores">
-                        ${Object.entries(e.result.scores || {}).map(([k,v]) => `<div class="history-score-chip" style="${scoreColor(v)}">${k.toUpperCase()}: ${v}</div>`).join('')}
-                    </div>
-                </div>`).join('');
-        }
-
-        function expandHistoryEntry(id) {
-            const history = getHistory();
-            const entry = history.find(e => e.id === id);
-            if (!entry) return;
-            const expanded = document.getElementById('history-expanded');
-            expanded.innerHTML = `
-                <button class="back-btn" onclick="collapseHistoryEntry()">← BACK TO CASE LIST</button>
-                <div class="overall-summary">${entry.result.overall}</div>
-                <div class="scores-panel">${buildScoresHTML(entry.result.scores)}</div>
-                ${buildEvidenceCard('PLOT HOLES', entry.result.plot_holes, '', 'CRITICAL', 'stamp-critical')}
-                ${buildEvidenceCard('CHARACTER ISSUES', entry.result.character_issues, '', 'CRITICAL', 'stamp-critical')}
-                ${buildEvidenceCard('TENSION IMPROVEMENTS', entry.result.tension_suggestions, 'advisory-title', 'ADVISORY', 'stamp-advisory')}
-                ${buildEvidenceCard('PACING NOTES', entry.result.pacing_notes, 'advisory-title', 'ADVISORY', 'stamp-advisory')}
-                ${buildEvidenceCard('STRENGTHS', entry.result.strengths, 'strength-title', 'CLEARED', 'stamp-cleared')}
-            `;
-            expanded.style.display = 'flex';
-            document.getElementById('history-results').style.display = 'none';
-            setTimeout(() => {
-                expanded.querySelectorAll('.evidence-card').forEach((c,i) => setTimeout(() => c.classList.add('visible'), i * 200));
-                expanded.querySelectorAll('.score-fill').forEach(f => { f.style.width = f.dataset.width; });
-            }, 100);
-        }
-
-        function collapseHistoryEntry() {
-            document.getElementById('history-expanded').style.display = 'none';
-            document.getElementById('history-results').style.display = 'block';
-        }
-
-        function clearHistory() {
-            localStorage.removeItem(HISTORY_KEY);
-            renderSidebarHistory();
-            renderHistoryView();
-        }
-
-        // ── Clear functions ──
-        function clearEvidence() {
-            textarea.value = '';
-            wordCountEl.innerText = '0';
-            document.getElementById('results-section').innerHTML = '';
-            document.getElementById('results-section').style.display = 'none';
-            document.getElementById('loading-state').style.display = 'none';
-            document.getElementById('error-state').style.display = 'none';
-            statusDot.classList.remove('active');
-            statusText.innerText = 'SYSTEM READY';
-        }
-
-        function clearCompare() {
-            document.getElementById('draft1-input').value = '';
-            document.getElementById('draft2-input').value = '';
-            document.getElementById('compare-results').innerHTML = '';
-            document.getElementById('compare-results').style.display = 'none';
-            document.getElementById('compare-loading').style.display = 'none';
-            document.getElementById('compare-error').style.display = 'none';
-        }
-
-        // ── Error helper ──
-        function showError(elId, msg) {
-            const el = document.getElementById(elId);
-            el.innerText = msg;
-            el.style.display = 'block';
-        }
-
-        // ── Score helpers ──
-        function getScorePerc(v) {
-            const s = (v || '').toLowerCase();
-            if (s === 'strong') return '100%';
-            if (s === 'good') return '75%';
-            if (s === 'fair') return '50%';
-            return '25%';
-        }
-        function getScoreColor(v) {
-            const s = (v || '').toLowerCase();
-            if (s === 'strong' || s === 'good') return 'var(--green)';
-            if (s === 'fair') return 'var(--amber)';
-            return 'var(--red-bright)';
-        }
-
-        function buildScoresHTML(scores) {
-            return Object.entries(scores || {}).map(([k,v]) => `
-                <div class="score-row">
-                    <span class="score-label">${k.toUpperCase()}</span>
-                    <div class="score-gauge"><div class="score-fill" data-width="${getScorePerc(v)}" style="background:${getScoreColor(v)};width:0%"></div></div>
-                    <span class="score-value">${v.toUpperCase()}</span>
-                </div>`).join('');
-        }
-
-        function getExhibit() { return `[EXHIBIT ${String(exhibitCounter++).padStart(2,'0')}]`; }
-
-        function buildEvidenceCard(title, items, titleClass, stamp, stampClass) {
-            if (!items || items.length === 0) return '';
-            return `<div class="evidence-card">
-                <div class="stamp ${stampClass}">${stamp}</div>
-                <div class="card-header">${title}</div>
-                ${items.map(it => `<div class="exhibit-item">
-                    <div class="exhibit-title ${titleClass}">${getExhibit()} ${it.title}</div>
-                    <div class="exhibit-detail">${it.detail}</div>
-                </div>`).join('')}
-            </div>`;
-        }
-
-        function animateResults(container) {
-            setTimeout(() => {
-                container.querySelectorAll('.score-fill').forEach(f => { f.style.width = f.dataset.width; });
-                container.querySelectorAll('.evidence-card').forEach((c,i) => {
-                    setTimeout(() => { c.classList.add('visible'); playTypewriterClick(); }, 300 + i * 400);
-                });
-            }, 100);
-        }
-
-        // ── ANALYZE ──
-        async function analyze() {
-            const text = textarea.value.trim();
-            const words = text.split(/\s+/).filter(Boolean).length;
-            if (!text || words < 50) { showError('error-state', 'INSUFFICIENT EVIDENCE — Paste at least 50 words.'); return; }
-
-            document.getElementById('results-section').innerHTML = '';
-            document.getElementById('results-section').style.display = 'none';
-            document.getElementById('error-state').style.display = 'none';
-            document.getElementById('loading-state').style.display = 'block';
-            document.getElementById('analyze-btn').disabled = true;
-            statusDot.classList.add('active');
-            statusText.innerText = 'CASE OPEN';
-
-            try {
-                const res = await fetch('/api/analyze', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ text })
-                });
-                const data = await res.json();
-                if (!res.ok) throw new Error(data.error || 'Request failed');
-
-                // Save to history
-                saveToHistory(text, data);
-                trackEvent('analyze');
-
-                // Render
-                exhibitCounter = 1;
-                const section = document.getElementById('results-section');
-                section.innerHTML = `
-                    <div class="overall-summary">${data.overall}</div>
-                    <div class="scores-panel">${buildScoresHTML(data.scores)}</div>
-                    ${buildEvidenceCard('PLOT HOLES & INCONSISTENCIES', data.plot_holes, '', 'CRITICAL', 'stamp-critical')}
-                    ${buildEvidenceCard('CHARACTER ISSUES', data.character_issues, '', 'CRITICAL', 'stamp-critical')}
-                    ${buildEvidenceCard('TENSION & SUSPENSE', data.tension_suggestions, 'advisory-title', 'ADVISORY', 'stamp-advisory')}
-                    ${buildEvidenceCard('PACING NOTES', data.pacing_notes, 'advisory-title', 'ADVISORY', 'stamp-advisory')}
-                    ${buildEvidenceCard('IDENTIFIED STRENGTHS', data.strengths, 'strength-title', 'CLEARED', 'stamp-cleared')}
-                `;
-                document.getElementById('loading-state').style.display = 'none';
-                section.style.display = 'flex';
-                animateResults(section);
-
-            } catch (err) {
-                document.getElementById('loading-state').style.display = 'none';
-                showError('error-state', 'ANALYSIS FAILED — ' + (err.message || 'Try again.'));
-            } finally {
-                document.getElementById('analyze-btn').disabled = false;
-                statusDot.classList.remove('active');
-                statusText.innerText = 'SYSTEM READY';
-            }
-        }
-
-        // ── COMPARE DRAFTS ──
-        async function compareDrafts() {
-            const text1 = document.getElementById('draft1-input').value.trim();
-            const text2 = document.getElementById('draft2-input').value.trim();
-            if (text1.split(/\s+/).length < 30 || text2.split(/\s+/).length < 30) {
-                showError('compare-error', 'INSUFFICIENT EVIDENCE — Each draft needs at least 30 words.');
-                return;
-            }
-
-            document.getElementById('compare-results').innerHTML = '';
-            document.getElementById('compare-results').style.display = 'none';
-            document.getElementById('compare-error').style.display = 'none';
-            document.getElementById('compare-loading').style.display = 'block';
-            document.getElementById('compare-btn').disabled = true;
-            statusDot.classList.add('active');
-            statusText.innerText = 'CROSS-REFERENCING';
-
-            try {
-                const res = await fetch('/api/compare', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ text1, text2 })
-                });
-                const data = await res.json();
-                if (!res.ok) throw new Error(data.error || 'Request failed');
-
-                const winnerColor = data.winner === 'Draft 1' ? 'var(--steel-blue)' : data.winner === 'Draft 2' ? 'var(--green)' : 'var(--amber)';
-                const changeClass = v => v === 'Improved' ? 'improved' : v === 'Weakened' ? 'weakened' : 'same';
-
-                exhibitCounter = 1;
-                const section = document.getElementById('compare-results');
-                section.innerHTML = `
-                    <div class="verdict-banner" style="border-color:${winnerColor}">
-                        <div class="verdict-winner" style="color:${winnerColor}">${data.winner.toUpperCase()} PREVAILS</div>
-                        <div class="verdict-text">${data.verdict}</div>
-                        <div class="verdict-advice">→ ${data.key_advice}</div>
-                    </div>
-                    <div class="compare-scores">
-                        ${Object.entries(data.score_change || {}).map(([k,v]) => `
-                        <div class="compare-score-box">
-                            <div class="compare-score-key">${k.toUpperCase()}</div>
-                            <div class="compare-score-val ${changeClass(v)}">${v.toUpperCase()}</div>
-                        </div>`).join('')}
-                    </div>
-                    ${buildEvidenceCard('IMPROVEMENTS IN DRAFT 2', data.improvements, 'strength-title', 'CLEARED', 'stamp-cleared')}
-                    ${buildEvidenceCard('REGRESSIONS FROM DRAFT 1', data.regressions, '', 'CRITICAL', 'stamp-critical')}
-                    ${buildEvidenceCard('ISSUES IN BOTH DRAFTS', data.unchanged_issues, 'advisory-title', 'ADVISORY', 'stamp-advisory')}
-                `;
-                document.getElementById('compare-loading').style.display = 'none';
-                section.style.display = 'flex';
-                animateResults(section);
-                trackEvent('compare');
-
-            } catch (err) {
-                document.getElementById('compare-loading').style.display = 'none';
-                showError('compare-error', 'COMPARISON FAILED — ' + (err.message || 'Try again.'));
-            } finally {
-                document.getElementById('compare-btn').disabled = false;
-                statusDot.classList.remove('active');
-                statusText.innerText = 'SYSTEM READY';
-            }
-        }
-
-        // ── CHARACTER MAP ──
-        let chapterCount = 1;
-
-        function addChapter() {
-            if (chapterCount >= 5) {
-                document.getElementById('add-chapter-btn').style.opacity = '0.4';
-                document.getElementById('add-chapter-btn').disabled = true;
-                return;
-            }
-            chapterCount++;
-            const container = document.getElementById('chapter-inputs');
-            const block = document.createElement('div');
-            block.className = 'chapter-block';
-            block.dataset.index = chapterCount - 1;
-            block.innerHTML = `
-                <div class="chapter-block-label">
-                    <span>CHAPTER ${chapterCount}</span>
-                    <button class="btn-remove-chapter" onclick="removeChapter(this)">REMOVE</button>
-                </div>
-                <div class="editor-container">
-                    <textarea class="chapter-textarea" placeholder="[PASTE CHAPTER ${chapterCount} HERE]"></textarea>
-                </div>`;
-            container.appendChild(block);
-            if (chapterCount >= 5) {
-                document.getElementById('add-chapter-btn').style.opacity = '0.4';
-                document.getElementById('add-chapter-btn').disabled = true;
-            }
-        }
-
-        function removeChapter(btn) {
-            btn.closest('.chapter-block').remove();
-            chapterCount--;
-            document.getElementById('add-chapter-btn').style.opacity = '1';
-            document.getElementById('add-chapter-btn').disabled = false;
-            // Renumber remaining
-            document.querySelectorAll('.chapter-block').forEach((block, i) => {
-                block.querySelector('.chapter-block-label span').textContent = `CHAPTER ${i + 1}`;
-                block.querySelector('textarea').placeholder = `[PASTE CHAPTER ${i + 1} HERE]`;
-            });
-        }
-
-        function clearCharacters() {
-            document.querySelectorAll('.chapter-textarea').forEach(t => t.value = '');
-            document.getElementById('character-results').innerHTML = '';
-            document.getElementById('characters-loading').style.display = 'none';
-            document.getElementById('characters-error').style.display = 'none';
-            // Reset to single chapter
-            const container = document.getElementById('chapter-inputs');
-            const blocks = container.querySelectorAll('.chapter-block');
-            blocks.forEach((b, i) => { if (i > 0) b.remove(); });
-            chapterCount = 1;
-            document.getElementById('add-chapter-btn').style.opacity = '1';
-            document.getElementById('add-chapter-btn').disabled = false;
-        }
-
-        function getRoleClass(role) {
-            const r = (role || '').toLowerCase();
-            if (r.includes('protagonist')) return 'role-protagonist';
-            if (r.includes('antagonist')) return 'role-antagonist';
-            if (r.includes('support')) return 'role-supporting';
-            return 'role-mentioned';
-        }
-
-        function getStatusClass(status) {
-            const s = (status || '').toLowerCase();
-            if (s.includes('consistent')) return 'status-consistent';
-            if (s.includes('minor')) return 'status-minor';
-            return 'status-attention';
-        }
-
-        function getConsistencyColor(val) {
-            const v = (val || '').toLowerCase();
-            if (v === 'strong') return 'var(--green)';
-            if (v === 'good') return 'var(--steel-blue)';
-            if (v === 'fair') return 'var(--amber)';
-            return 'var(--red-bright)';
-        }
-
-        function buildCharCard(char) {
-            const inconsistencies = (char.inconsistencies || []).map(inc => `
-                <div class="char-inconsistency">
-                    <div class="char-inconsistency-title">⚠ ${inc.title}</div>
-                    <div class="char-inconsistency-detail">${inc.detail}</div>
-                </div>`).join('');
-
-            const traits = (char.traits || []).map(t => `<span class="char-trait">${t}</span>`).join('');
-            const chapters = char.chapters_present ? `<div class="char-chapters">APPEARS IN: ${char.chapters_present.map(c => `CH.${c}`).join(', ')}</div>` : '';
-
-            return `<div class="char-card">
-                <div class="char-card-top">
-                    <div>
-                        <div class="char-name">${char.name}</div>
-                        <div class="char-role ${getRoleClass(char.role)}">${(char.role || 'unknown').toUpperCase()}</div>
-                    </div>
-                    <div class="char-status-badge ${getStatusClass(char.status)}">${(char.status || '').toUpperCase()}</div>
-                </div>
-                ${traits ? `<div class="char-section-label">TRAITS</div><div class="char-traits">${traits}</div>` : ''}
-                ${char.dialogue_style ? `<div class="char-section-label">DIALOGUE STYLE</div><div class="char-text">${char.dialogue_style}</div>` : ''}
-                ${char.arc_notes ? `<div class="char-section-label">ARC</div><div class="char-text">${char.arc_notes}</div>` : ''}
-                ${inconsistencies ? `<div class="char-section-label">INCONSISTENCIES</div>${inconsistencies}` : ''}
-                ${chapters}
-            </div>`;
-        }
-
-        async function analyzeCharacters() {
-            const textareas = document.querySelectorAll('.chapter-textarea');
-            const chapters = Array.from(textareas).map(t => t.value.trim()).filter(t => t.split(/\s+/).length >= 30);
-
-            if (chapters.length === 0) {
-                showError('characters-error', 'INSUFFICIENT EVIDENCE — At least one chapter needs 30+ words.');
-                return;
-            }
-
-            document.getElementById('character-results').innerHTML = '';
-            document.getElementById('characters-error').style.display = 'none';
-            document.getElementById('characters-loading').style.display = 'block';
-            document.getElementById('characters-btn').disabled = true;
-            statusDot.classList.add('active');
-            statusText.innerText = 'BUILDING DOSSIERS';
-
-            try {
-                const res = await fetch('/api/characters', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ chapters })
-                });
-                const data = await res.json();
-                if (!res.ok) throw new Error(data.error || 'Request failed');
-
-                const container = document.getElementById('character-results');
-                const chars = (data.characters || []);
-                const relationships = (data.relationship_notes || []);
-
-                container.innerHTML = `
-                    <div class="char-overall">
-                        <div class="char-overall-label">OVERALL CONSISTENCY</div>
-                        <div class="char-overall-score" style="color:${getConsistencyColor(data.overall_consistency)}">${(data.overall_consistency || '').toUpperCase()}</div>
-                    </div>
-                    ${data.top_priority ? `<div class="char-priority">
-                        <div class="char-priority-label">TOP PRIORITY FIX</div>
-                        <div class="char-priority-text">${data.top_priority}</div>
-                    </div>` : ''}
-                    <div class="char-grid">${chars.map(c => buildCharCard(c)).join('')}</div>
-                    ${relationships.length > 0 ? `<div class="char-relationships">
-                        <div class="char-relationships-title">RELATIONSHIP DYNAMICS</div>
-                        ${relationships.map(r => `<div class="rel-item">
-                            <div class="rel-chars">${r.characters}</div>
-                            <div class="rel-note">${r.note}</div>
-                        </div>`).join('')}
-                    </div>` : ''}
-                    ${data.missing_characters && data.missing_characters.toLowerCase() !== 'none' ? `<div class="char-missing">⚠ MISSING CHARACTERS: ${data.missing_characters}</div>` : ''}
-                `;
-
-                document.getElementById('characters-loading').style.display = 'none';
-
-                // Animate cards
-                setTimeout(() => {
-                    container.querySelectorAll('.char-card').forEach((c, i) => {
-                        setTimeout(() => { c.classList.add('visible'); playTypewriterClick(); }, i * 200);
+                    // Fill the nearest visible textarea with clean extracted text
+                    var textareas = Array.from(document.querySelectorAll('textarea'));
+                    var target = textareas.find(function(ta) {
+                        var r = ta.getBoundingClientRect();
+                        return r.width > 0 && r.height > 0;
                     });
-                    setTimeout(() => container.scrollIntoView({ behavior: 'smooth', block: 'start' }), 150);
-                }, 100);
+                    if (target) {
+                        // Use native value setter so React/Vue frameworks detect the change
+                        var nativeSet = Object.getOwnPropertyDescriptor(
+                            window.HTMLTextAreaElement.prototype, 'value').set;
+                        nativeSet.call(target, text);
+                        target.dispatchEvent(new Event('input',  { bubbles: true }));
+                        target.dispatchEvent(new Event('change', { bubbles: true }));
+                    }
 
-            } catch (err) {
-                document.getElementById('characters-loading').style.display = 'none';
-                showError('characters-error', 'DOSSIER BUILD FAILED — ' + (err.message || 'Try again.'));
-                trackEvent('characters');
-            } finally {
-                document.getElementById('characters-btn').disabled = false;
-                statusDot.classList.remove('active');
-                statusText.innerText = 'SYSTEM READY';
-            }
+                    window._pzlText = text;
+                    if (text.length > 80) PZL.schedule(text);
+
+                } catch(err) {
+                    console.warn('[PZL] PDF extraction error:', err.message);
+                }
+            });
         }
 
-        // ── SENTIMENT ARC ──
-        // AFINN-165 lexicon subset (scores -5 to +5, normalized to -1 to +1)
-        const AFINN = {"abandon":-2,"abhor":-3,"abhorrent":-3,"abuse":-3,"ache":-2,"aching":-2,"aggravate":-2,"aggression":-2,"aggressive":-2,"agitated":-2,"agony":-3,"alarm":-2,"alarmed":-2,"alarming":-2,"ambush":-2,"anger":-2,"angry":-2,"anguish":-3,"annoy":-2,"annoyance":-2,"anxious":-2,"appall":-3,"appalling":-3,"apprehension":-2,"assault":-2,"atrocious":-3,"atrocity":-4,"attack":-2,"awful":-3,"awkward":-2,"bad":-2,"baffled":-1,"banish":-2,"battered":-2,"betray":-3,"betrayal":-3,"bitter":-2,"blame":-2,"bleed":-2,"bleeding":-2,"bleak":-2,"blood":-1,"brutal":-3,"brutality":-3,"burden":-2,"burn":-2,"chaos":-2,"cheat":-2,"cold":-1,"collapse":-2,"conflict":-2,"confuse":-1,"confused":-1,"corrupt":-3,"coward":-2,"cowardly":-2,"crash":-2,"crave":-1,"crime":-2,"criminal":-2,"crisis":-2,"cruel":-3,"cruelty":-3,"crush":-2,"curse":-3,"cynical":-2,"damage":-2,"danger":-2,"dangerous":-2,"dark":-1,"dead":-2,"deadly":-3,"death":-2,"decay":-2,"deceive":-3,"deception":-3,"defeat":-2,"desolate":-3,"despair":-3,"desperate":-2,"destroy":-3,"destructive":-3,"devastate":-3,"devastating":-3,"disaster":-3,"disease":-2,"disgust":-3,"disgusting":-3,"dismiss":-2,"disorder":-2,"distress":-2,"disturb":-2,"disturbing":-2,"doubt":-1,"dread":-3,"dreadful":-3,"dying":-2,"empty":-1,"enemy":-2,"evil":-3,"fail":-2,"failure":-2,"fake":-2,"fall":-1,"false":-2,"fear":-2,"fearful":-2,"fight":-1,"filth":-3,"foolish":-2,"force":-1,"fragile":-1,"fraud":-3,"fright":-2,"frighten":-2,"frightening":-3,"frustrate":-2,"frustration":-2,"fury":-3,"grief":-3,"grim":-2,"groan":-2,"guilt":-2,"harsh":-2,"hate":-3,"hatred":-3,"helpless":-2,"hopeless":-3,"horrible":-3,"horrified":-3,"horrify":-3,"horror":-3,"hostile":-2,"hurt":-2,"ignorant":-2,"illegal":-2,"imprison":-2,"insecure":-2,"insult":-2,"kill":-3,"lack":-1,"liar":-3,"lie":-2,"lifeless":-2,"lonely":-2,"lose":-1,"loss":-2,"lost":-1,"mad":-2,"malicious":-3,"menace":-2,"menacing":-2,"miserable":-3,"misery":-3,"mistake":-1,"mourn":-2,"murder":-4,"neglect":-2,"nervous":-2,"nightmare":-3,"numb":-1,"offensive":-2,"overwhelm":-2,"pain":-2,"painful":-2,"panic":-2,"paranoid":-2,"pathetic":-2,"poison":-3,"poverty":-2,"powerless":-2,"problem":-1,"rage":-3,"regret":-2,"reject":-2,"rotten":-3,"ruin":-3,"sad":-2,"savage":-3,"scare":-2,"scared":-2,"shame":-2,"shatter":-2,"shriek":-2,"sick":-2,"sinister":-3,"sorrow":-3,"stab":-3,"steal":-2,"stress":-2,"struggle":-2,"suffer":-2,"suffering":-3,"suspicious":-1,"tear":-1,"tears":-1,"terror":-3,"terrify":-3,"threat":-2,"threaten":-2,"torture":-4,"tragic":-3,"trap":-2,"trouble":-2,"ugly":-2,"unease":-1,"unfortunate":-2,"unhappy":-2,"unstable":-2,"vicious":-3,"victim":-2,"violence":-3,"violent":-3,"vulnerable":-2,"warn":-1,"weak":-1,"weep":-2,"wicked":-3,"worry":-2,"wound":-2,"wrath":-3,"wrong":-2,"abuse":-3,"aggrieve":-2,"ail":-1,"alienate":-2,"antagonize":-2,"betray":-3,"confiscate":-2,"contaminate":-2,"demean":-2,"demoralize":-2,"deprive":-2,"deteriorate":-2,"exploit":-3,"falter":-1,"grieve":-2,"harm":-2,"humiliate":-3,"manipulate":-3,"oppress":-3,"persecute":-3,"sabotage":-3,"slaughter":-4,"suppress":-2,"terrorize":-4,"torment":-3,"undermine":-2,"violate":-3,"abandon":-2,"astound":-1,"breathless":-1,"cornered":-2,"creep":-1,"crooked":-2,"desperate":-2,"erratic":-1,"evasive":-1,"hollow":-2,"hunted":-2,"obsessed":-1,"reckless":-2,"restless":-1,"shaken":-2,"shudder":-2,"silent":-1,"sinister":-3,"smirk":-1,"stalk":-2,"tense":-1,"uneasy":-1,"vanish":-1,"wary":-1,"whisper":-1,"abandon":-2,"abrupt":-1,
-        "admire":2,"adore":3,"agree":1,"alert":1,"alive":2,"amaze":3,"amazing":4,"appreciate":2,"astonish":3,"attain":2,"attract":2,"awesome":4,"balance":2,"beautiful":3,"believe":1,"benefit":2,"best":3,"better":2,"brave":2,"brilliant":3,"calm":2,"capable":2,"care":2,"careful":1,"celebrate":3,"certain":1,"cheerful":2,"clean":2,"clear":2,"clever":2,"comfort":2,"confident":2,"courage":3,"creative":2,"dedicated":2,"delight":3,"discover":2,"dream":1,"drive":1,"ease":2,"effective":2,"efficient":2,"encourage":2,"enjoy":2,"excitement":3,"expert":2,"extraordinary":4,"faith":2,"familiar":1,"fantastic":4,"fascinate":3,"fine":1,"focus":1,"free":2,"fresh":2,"friendly":2,"glad":2,"glorious":3,"good":2,"great":3,"grow":1,"guidance":2,"happy":3,"harmony":2,"heal":2,"heart":1,"help":2,"helpful":2,"hero":3,"hope":3,"humor":1,"imagine":1,"improve":2,"insight":2,"inspire":3,"intelligent":2,"joy":3,"kind":2,"knowledge":2,"laugh":2,"learn":2,"light":1,"love":3,"loyal":3,"luck":2,"magnificent":4,"master":2,"motivate":2,"nice":2,"opportunity":2,"optimistic":2,"passion":2,"patient":2,"perfect":3,"positive":2,"powerful":2,"praise":3,"pride":2,"progress":2,"protect":2,"proud":2,"radiant":3,"remarkable":3,"resolve":2,"respect":2,"rise":1,"safe":2,"satisfy":2,"save":2,"shine":2,"skilled":2,"smile":2,"strength":3,"success":3,"support":2,"talent":2,"thankful":2,"thrill":2,"triumph":3,"trust":3,"truth":2,"unique":1,"victory":3,"vision":2,"warm":2,"wise":2,"wonder":3,"worthy":2,"achieve":2,"advance":1,"affection":3,"alert":1,"answer":1,"arrive":1,"assist":2,"award":2,"awesome":4,"begin":1,"bond":2,"bright":2,"change":1,"choose":1,"connect":2,"content":2,"create":2,"cure":3,"determined":2,"devoted":2,"eager":2,"energetic":2,"engage":2,"excel":3,"fair":2,"faithful":3,"flourish":3,"fortunate":2,"fun":2,"genuine":2,"grateful":3,"honest":2,"honor":3,"hug":2,"ideal":2,"imagination":2,"important":1,"incredible":3,"independence":2,"innovative":2,"integrity":3,"keen":1,"leader":2,"meaningful":2,"memorable":2,"mindful":2,"noble":3,"nurture":2,"open":1,"outstanding":3,"overcome":2,"peaceful":3,"persist":2,"perspective":1,"powerful":2,"refresh":2,"reliable":2,"resilient":3,"reward":2,"safe":2,"secure":2,"serene":3,"sincere":2,"smart":2,"steady":1,"strong":2,"sublime":3,"surprise":1,"thoughtful":2,"together":1,"transform":2,"understand":1,"unite":2,"uplift":2,"value":2,"vibrant":2,"welcome":2,"willing":1,"wonderful":4};
+        // Patch existing inputs + watch for new ones (modal creates them dynamically)
+        document.querySelectorAll('input[type=file]').forEach(patchFileInput);
+        new MutationObserver(function(mutations) {
+            mutations.forEach(function(m) {
+                m.addedNodes.forEach(function(node) {
+                    if (node.nodeType !== 1) return;
+                    if (node.matches && node.matches('input[type=file]')) patchFileInput(node);
+                    node.querySelectorAll && node.querySelectorAll('input[type=file]')
+                        .forEach(patchFileInput);
+                });
+            });
+        }).observe(document.body, { childList: true, subtree: true });
 
-        const sentimentInput = document.getElementById('sentiment-input');
-        sentimentInput.addEventListener('input', () => {
-            const w = sentimentInput.value.trim().split(/\s+/).filter(Boolean).length;
-            document.getElementById('sentiment-word-count').textContent = w;
+        // ─── DETECT PASTED / TYPED TEXT ───────────────────────────────
+        var _debounce = null;
+        document.addEventListener('input', function(e) {
+            if (e.target.tagName !== 'TEXTAREA') return;
+            var txt = e.target.value.trim();
+            if (txt.length < 80) return;
+            window._pzlText = txt;
+            clearTimeout(_debounce);
+            _debounce = setTimeout(function() { PZL.schedule(txt); }, 1800);
         });
 
-        function clearSentiment() {
-            sentimentInput.value = '';
-            document.getElementById('sentiment-word-count').textContent = '0';
-            document.getElementById('sentiment-chart-wrap').style.display = 'none';
-            document.getElementById('sentiment-error').style.display = 'none';
-            document.getElementById('sentiment-svg-container').innerHTML = '';
-            document.getElementById('sentiment-stats').innerHTML = '';
-            document.getElementById('peak-annotations').innerHTML = '';
-        }
+        // ─── PZL CORE ─────────────────────────────────────────────────
+        window.PZL = {
+            running: false,
 
-        function scoreText(text) {
-            const words = text.toLowerCase().replace(/[^a-z\s]/g, ' ').split(/\s+/).filter(Boolean);
-            let score = 0, matches = 0;
-            words.forEach(w => {
-                if (AFINN[w] !== undefined) { score += AFINN[w]; matches++; }
-            });
-            return words.length > 0 ? score / Math.max(words.length * 0.5, 1) : 0;
-        }
+            schedule: function(text) {
+                if (this.running) return;
+                this.running = true;
+                this.run(text).finally(function() { PZL.running = false; });
+            },
 
-        function clamp(v, min, max) { return Math.min(Math.max(v, min), max); }
+            run: async function(text) {
+                PZL.log('NEURAL LINK ESTABLISHED — ' + text.split(/\s+/).length + ' TOKENS', 'normal');
+                PZL.progress(12);
 
-        function movingAverage(arr, window) {
-            return arr.map((_, i) => {
-                const start = Math.max(0, i - Math.floor(window/2));
-                const end = Math.min(arr.length, i + Math.ceil(window/2));
-                const slice = arr.slice(start, end);
-                return slice.reduce((a,b) => a+b, 0) / slice.length;
-            });
-        }
+                // Randomise case ID
+                var cEl = document.getElementById('caseIdVal');
+                if (cEl) cEl.textContent = 'CASE ID: PZ-' + (Math.random()*900+100|0);
 
-        function scoreToColor(score) {
-            if (score <= -0.3) {
-                const t = clamp((-score - 0.3) / 0.7, 0, 1);
-                const r = Math.round(139 + t * (255 - 139));
-                const g = Math.round(0);
-                const b = Math.round(0);
-                return `rgb(${r},${g},${b})`;
-            } else if (score >= 0.3) {
-                const t = clamp((score - 0.3) / 0.7, 0, 1);
-                const r = Math.round(46 + t * (0 - 46));
-                const g = Math.round(139 + t * (200 - 139));
-                const b = Math.round(87 + t * (0 - 87));
-                return `rgb(${r},${g},${b})`;
-            }
-            return '#4a7fa5';
-        }
+                try {
+                    // Call analyze
+                    PZL.log('QUERYING MAGI ANALYSIS CORE...', 'normal');
+                    var aRes  = await fetch('/api/analyze', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ text: text })
+                    });
+                    var aData = await aRes.json();
+                    PZL.progress(52);
 
-        function analyzeSentiment() {
-            const text = sentimentInput.value.trim();
-            const words = text.split(/\s+/).filter(Boolean).length;
-            if (!text || words < 50) {
-                const el = document.getElementById('sentiment-error');
-                el.textContent = 'INSUFFICIENT EVIDENCE — Paste at least 50 words.';
-                el.style.display = 'block';
-                return;
-            }
-            document.getElementById('sentiment-error').style.display = 'none';
+                    // Derive live metrics
+                    var holes   = (aData.plot_holes || []).length;
+                    var strengths = (aData.strengths || []).length;
+                    var scoreMap = { Strong:95, Good:78, Fair:55, Weak:30 };
+                    var vals = Object.values(aData.scores || {})
+                                     .map(function(s){ return scoreMap[s]||60; });
+                    var conf = vals.length
+                        ? Math.round(vals.reduce(function(a,b){return a+b;},0)/vals.length)
+                        : 75;
 
-            // Split into segments (~60 words each, min 8 segments)
-            const allWords = text.split(/\s+/).filter(Boolean);
-            const segSize = Math.max(40, Math.floor(allWords.length / Math.max(8, Math.floor(allWords.length / 60))));
-            const segments = [];
-            for (let i = 0; i < allWords.length; i += segSize) {
-                segments.push(allWords.slice(i, i + segSize).join(' '));
-            }
+                    // Update pattern metrics panel
+                    PZL.metric('metricClues',      String((holes+strengths)*4).padStart(2,'0'));
+                    PZL.metric('metricAnomalies',  String(holes).padStart(2,'0'));
+                    PZL.metric('metricConfidence', conf + '%');
 
-            const rawScores = segments.map(s => scoreText(s));
-            const smoothed = movingAverage(rawScores, 3);
+                    // Update HUD probability
+                    var probEl = document.getElementById('hudNodeProb');
+                    if (probEl) probEl.textContent = conf + '% MATCH [PATTERN RED]';
 
-            // Stats
-            const avg = smoothed.reduce((a,b) => a+b, 0) / smoothed.length;
-            const maxScore = Math.max(...smoothed);
-            const minScore = Math.min(...smoothed);
-            const maxIdx = smoothed.indexOf(maxScore);
-            const minIdx = smoothed.indexOf(minScore);
+                    // Log anomalies and strengths
+                    (aData.plot_holes || []).forEach(function(h, i) {
+                        PZL.log('ANOMALY #' + String(i+1).padStart(2,'0') + ': '
+                            + (h.title||'').toUpperCase().slice(0,60) + '...', 'warning');
+                    });
+                    (aData.strengths || []).forEach(function(s) {
+                        PZL.log('PATTERN CONFIRMED: ' + (s.title||'').toUpperCase(), 'success');
+                    });
 
-            // Stats boxes
-            const statClass = v => v > 0.1 ? 'stat-positive' : v < -0.1 ? 'stat-negative' : 'stat-neutral';
-            const pct = v => Math.round((v + 5) / 10 * 100);
-            document.getElementById('sentiment-stats').innerHTML = `
-                <div class="stat-box">
-                    <div class="stat-label">OVERALL TONE</div>
-                    <div class="stat-value ${statClass(avg)}">${avg < -0.3 ? 'DARK' : avg < -0.1 ? 'TENSE' : avg < 0.1 ? 'NEUTRAL' : avg < 0.3 ? 'HOPEFUL' : 'POSITIVE'}</div>
-                </div>
-                <div class="stat-box">
-                    <div class="stat-label">PEAK TENSION</div>
-                    <div class="stat-value stat-negative">SEGMENT ${minIdx + 1} / ${segments.length}</div>
-                </div>
-                <div class="stat-box">
-                    <div class="stat-label">PEAK POSITIVITY</div>
-                    <div class="stat-value stat-positive">SEGMENT ${maxIdx + 1} / ${segments.length}</div>
-                </div>`;
+                    // Call characters API
+                    PZL.log('COMPILING CHARACTER DOSSIERS...', 'normal');
+                    var cRes  = await fetch('/api/characters', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ chapters: [text] })
+                    });
+                    var cData = await cRes.json();
+                    var chars = cData.characters || [];
+                    PZL.progress(88);
 
-            // SVG Chart
-            const W = 800, H = 280, PAD = { top: 30, right: 20, bottom: 40, left: 50 };
-            const chartW = W - PAD.left - PAD.right;
-            const chartH = H - PAD.top - PAD.bottom;
-            const minY = Math.min(minScore, -0.5), maxY = Math.max(maxScore, 0.5);
-            const range = maxY - minY || 1;
+                    // Update subject list
+                    PZL.subjects(chars);
 
-            const xPos = i => PAD.left + (i / (smoothed.length - 1)) * chartW;
-            const yPos = v => PAD.top + (1 - (v - minY) / range) * chartH;
-            const zeroY = yPos(0);
+                    // Update canvas
+                    PZL.canvas(chars);
 
-            // Build SVG path with colored segments
-            let paths = '';
-            for (let i = 0; i < smoothed.length - 1; i++) {
-                const x1 = xPos(i), y1 = yPos(smoothed[i]);
-                const x2 = xPos(i+1), y2 = yPos(smoothed[i+1]);
-                const color = scoreToColor((smoothed[i] + smoothed[i+1]) / 2);
-                paths += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${color}" stroke-width="3" stroke-linecap="round"/>`;
-            }
+                    // Update HUD selected node
+                    if (chars.length) {
+                        var nEl = document.getElementById('hudSelectedNode');
+                        if (nEl) nEl.textContent = chars[0].name
+                            + ' (' + (chars[0].role||'Unknown') + ')';
+                    }
 
-            // Area fill
-            let areaPath = `M${xPos(0)},${zeroY} L${xPos(0)},${yPos(smoothed[0])}`;
-            smoothed.forEach((v, i) => { if (i > 0) areaPath += ` L${xPos(i)},${yPos(v)}`; });
-            areaPath += ` L${xPos(smoothed.length-1)},${zeroY} Z`;
+                    PZL.progress(100);
+                    PZL.log('CONFIDENCE STABILIZED AT ' + conf + '%. READY.', 'success');
+                    PZL.log((aData.overall||'').slice(0,70).toUpperCase() + '...', 'success');
 
-            // Grid lines
-            let gridLines = '';
-            [-0.6,-0.3,0,0.3,0.6].forEach(v => {
-                if (v < minY || v > maxY) return;
-                const y = yPos(v);
-                const label = v === 0 ? 'NEUTRAL' : v > 0 ? `+${v.toFixed(1)}` : v.toFixed(1);
-                gridLines += `<line x1="${PAD.left}" y1="${y}" x2="${W - PAD.right}" y2="${y}" stroke="${v===0?'#444':'#222'}" stroke-width="${v===0?1.5:0.5}" stroke-dasharray="${v===0?'':4}"/>`;
-                gridLines += `<text x="${PAD.left - 6}" y="${y + 4}" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="9" fill="#555">${label}</text>`;
-            });
+                } catch(err) {
+                    PZL.log('ERROR: ' + err.message.toUpperCase(), 'warning');
+                }
+            },
 
-            // X axis labels
-            let xLabels = '';
-            const step = Math.max(1, Math.floor(smoothed.length / 8));
-            for (let i = 0; i < smoothed.length; i += step) {
-                xLabels += `<text x="${xPos(i)}" y="${H - PAD.bottom + 16}" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#555">P${i+1}</text>`;
-            }
-
-            // Data points (invisible hit areas)
-            let points = '';
-            smoothed.forEach((v, i) => {
-                const color = scoreToColor(v);
-                const preview = segments[i].slice(0, 80).replace(/"/g, '&quot;') + '...';
-                points += `<circle cx="${xPos(i)}" cy="${yPos(v)}" r="6" fill="${color}" stroke="var(--bg-color)" stroke-width="2" 
-                    class="sentiment-point" 
-                    data-score="${v.toFixed(3)}" 
-                    data-seg="${i+1}"
-                    data-preview="${preview}"
-                    style="cursor:crosshair"/>`;
-            });
-
-            // Mark peaks
-            const peakCircles = `
-                <circle cx="${xPos(minIdx)}" cy="${yPos(minScore)}" r="8" fill="none" stroke="var(--red-bright)" stroke-width="2"/>
-                <circle cx="${xPos(maxIdx)}" cy="${yPos(maxScore)}" r="8" fill="none" stroke="var(--green)" stroke-width="2"/>`;
-
-            document.getElementById('sentiment-svg-container').innerHTML = `
-                <svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">
-                    <defs>
-                        <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stop-color="#8b0000" stop-opacity="0.15"/>
-                            <stop offset="50%" stop-color="#4a7fa5" stop-opacity="0.05"/>
-                            <stop offset="100%" stop-color="#2e8b57" stop-opacity="0.1"/>
-                        </linearGradient>
-                    </defs>
-                    ${gridLines}
-                    <path d="${areaPath}" fill="url(#areaGrad)"/>
-                    ${paths}
-                    ${peakCircles}
-                    ${points}
-                    ${xLabels}
-                    <text x="${PAD.left}" y="${H - 4}" font-family="JetBrains Mono, monospace" font-size="9" fill="#444">PARAGRAPH SEGMENTS →</text>
-                </svg>`;
-
-            // Tooltip
-            const tooltip = document.getElementById('sentiment-tooltip');
-            document.querySelectorAll('.sentiment-point').forEach(pt => {
-                pt.addEventListener('mouseenter', e => {
-                    document.getElementById('tooltip-score').textContent = `SEG ${e.target.dataset.seg} · SCORE: ${parseFloat(e.target.dataset.score).toFixed(2)}`;
-                    document.getElementById('tooltip-text').textContent = '"' + e.target.dataset.preview + '"';
-                    tooltip.style.display = 'block';
+            // Update subject list
+            subjects: function(chars) {
+                var list = document.getElementById('subjectList');
+                if (!list || !chars.length) return;
+                list.innerHTML = '';
+                var labels  = { protagonist:'ACTIVE LEAD', antagonist:'HIGH THREAT',
+                                supporting:'MODERATE',     mentioned:'PASSIVE' };
+                var classes = { protagonist:'success',     antagonist:'high',
+                                supporting:'med',          mentioned:'' };
+                chars.slice(0,6).forEach(function(c, i) {
+                    var letter = String.fromCharCode(65+i);
+                    var role   = (c.role||'mentioned').toLowerCase();
+                    var trait  = (c.traits||[])[0] || c.role || 'Unknown';
+                    var risk   = ({ 'Consistent':'VERIFIED','Minor Issues':'MODERATE',
+                                    'Needs Attention':'HIGH THREAT' })[c.status]
+                                || labels[role] || 'UNKNOWN';
+                    var li = document.createElement('li');
+                    li.className = 'subject-item' + (i===0?' active':'');
+                    li.dataset.subject = letter;
+                    li.innerHTML =
+                        '<span class="subj-tag">[SUBJECT '+letter+']</span>' +
+                        '<span class="subj-name">'+(c.name||'Unknown')+' ('+trait+')</span>' +
+                        '<span class="subj-risk '+(classes[role]||'")>'+risk+'</span>';
+                    list.appendChild(li);
                 });
-                pt.addEventListener('mousemove', e => {
-                    tooltip.style.left = (e.clientX + 16) + 'px';
-                    tooltip.style.top = (e.clientY - 40) + 'px';
+                list.querySelectorAll('.subject-item').forEach(function(item) {
+                    item.addEventListener('click', function() {
+                        list.querySelectorAll('.subject-item')
+                            .forEach(function(el){ el.classList.remove('active'); });
+                        this.classList.add('active');
+                        var nm = this.querySelector('.subj-name');
+                        var nd = document.getElementById('hudSelectedNode');
+                        if (nd && nm) nd.textContent = nm.textContent;
+                    });
                 });
-                pt.addEventListener('mouseleave', () => { tooltip.style.display = 'none'; });
-            });
+            },
 
-            // Peak annotations
-            document.getElementById('peak-annotations').innerHTML = `
-                <div class="peak-title">KEY MOMENTS</div>
-                <div class="peak-item peak-low">
-                    <div class="peak-item-label">PEAK TENSION — SEGMENT ${minIdx + 1}</div>
-                    <div class="peak-item-text">${segments[minIdx].slice(0, 150)}...</div>
-                </div>
-                <div class="peak-item peak-high">
-                    <div class="peak-item-label">PEAK POSITIVITY — SEGMENT ${maxIdx + 1}</div>
-                    <div class="peak-item-text">${segments[maxIdx].slice(0, 150)}...</div>
-                </div>`;
+            // Update canvas with real character nodes
+            canvas: function(chars) {
+                // Try antigravity's own update functions first
+                ['updateVisualizerData','updateCharacterNetwork','refreshCanvas',
+                 'setCharacters','updateNodes','updateGraph'].forEach(function(fn) {
+                    if (typeof window[fn]==='function') {
+                        try { window[fn](chars); } catch(e){}
+                    }
+                });
+                // Fire custom events
+                ['pzl:analysisComplete','characters:updated','analysis:complete']
+                    .forEach(function(name) {
+                        var ev = new CustomEvent(name, { detail:{ characters:chars } });
+                        document.dispatchEvent(ev);
+                        window.dispatchEvent(ev);
+                    });
+                // Fallback: draw directly onto the canvas
+                PZL.draw(chars);
+            },
 
-            document.getElementById('sentiment-chart-wrap').style.display = 'block';
-            trackEvent('sentiment');
-            setTimeout(() => document.getElementById('sentiment-chart-wrap').scrollIntoView({ behavior: 'smooth', block: 'start' }), 150);
-        }
+            // Minimal canvas draw fallback
+            draw: function(chars) {
+                var canvas = document.getElementById('heroVisualCanvas');
+                if (!canvas || !chars.length) return;
+                var ctx = canvas.getContext('2d');
+                var W = canvas.offsetWidth  || 400;
+                var H = canvas.offsetHeight || 300;
+                canvas.width  = W;
+                canvas.height = H;
+                ctx.clearRect(0,0,W,H);
 
-        // ── READABILITY & COMPLEXITY ──
-        const readInput = document.getElementById('readability-input');
-        readInput.addEventListener('input', () => {
-            const w = readInput.value.trim().split(/\s+/).filter(Boolean).length;
-            document.getElementById('readability-word-count').textContent = w;
-        });
+                var cx = W/2, cy = H/2, r = Math.min(W,H)*0.30;
+                var colors = { protagonist:'#FF0026', antagonist:'#FF6600',
+                               supporting:'#00FF41',  mentioned:'#FFB800' };
 
-        function clearReadability() {
-            readInput.value = '';
-            document.getElementById('readability-word-count').textContent = '0';
-            document.getElementById('readability-results').style.display = 'none';
-            document.getElementById('readability-error').style.display = 'none';
-        }
+                var nodes = chars.slice(0,5).map(function(c,i) {
+                    var a = (i/Math.min(chars.length,5))*Math.PI*2 - Math.PI/2;
+                    return { x:cx+r*Math.cos(a), y:cy+r*Math.sin(a),
+                             name:c.name||'?', role:(c.role||'mentioned').toLowerCase() };
+                });
 
-        // Count syllables in a word (English approximation)
-        function countSyllables(word) {
-            word = word.toLowerCase().replace(/[^a-z]/g, '');
-            if (word.length <= 3) return 1;
-            word = word.replace(/(?:[^laeiouy]es|ed|[^laeiouy]e)$/, '');
-            word = word.replace(/^y/, '');
-            const matches = word.match(/[aeiouy]{1,2}/g);
-            return matches ? matches.length : 1;
-        }
+                // Lines
+                ctx.strokeStyle='rgba(255,0,38,0.2)';
+                ctx.lineWidth=1; ctx.setLineDash([4,4]);
+                for (var i=0;i<nodes.length;i++) {
+                    for (var j=i+1;j<nodes.length;j++) {
+                        ctx.beginPath();
+                        ctx.moveTo(nodes[i].x,nodes[i].y);
+                        ctx.lineTo(nodes[j].x,nodes[j].y);
+                        ctx.stroke();
+                    }
+                }
+                ctx.setLineDash([]);
 
-        // Is word complex? (3+ syllables, not proper noun, not compound)
-        function isComplex(word) {
-            const clean = word.toLowerCase().replace(/[^a-z]/g, '');
-            if (clean.length < 4) return false;
-            return countSyllables(clean) >= 3;
-        }
+                // Centre node
+                ctx.beginPath(); ctx.arc(cx,cy,13,0,Math.PI*2);
+                ctx.fillStyle='rgba(255,0,38,0.1)'; ctx.fill();
+                ctx.strokeStyle='#FF0026'; ctx.lineWidth=1.5; ctx.stroke();
+                ctx.fillStyle='#666655'; ctx.font='8px monospace';
+                ctx.textAlign='center'; ctx.fillText('MYSTERY',cx,cy+24);
 
-        // Tokenize into sentences
-        function getSentences(text) {
-            return text.split(/[.!?]+/).map(s => s.trim()).filter(s => s.split(/\s+/).length > 2);
-        }
+                // Character nodes
+                nodes.forEach(function(n) {
+                    var col = colors[n.role]||'#888877';
+                    ctx.beginPath(); ctx.arc(n.x,n.y,11,0,Math.PI*2);
+                    ctx.fillStyle='rgba(8,8,8,0.9)'; ctx.fill();
+                    ctx.strokeStyle=col; ctx.lineWidth=1.5; ctx.stroke();
+                    ctx.beginPath(); ctx.arc(n.x,n.y,4,0,Math.PI*2);
+                    ctx.fillStyle=col; ctx.fill();
+                    ctx.fillStyle='#aaaaaa'; ctx.font='8px monospace';
+                    ctx.textAlign='center';
+                    ctx.fillText(n.name.split(' ')[0].toUpperCase().slice(0,8),n.x,n.y+22);
+                });
+            },
 
-        // Is sentence dialogue?
-        function isDialogue(sentence) {
-            return /[""\u201c\u201d]/.test(sentence);
-        }
-
-        function analyzeReadability() {
-            const text = readInput.value.trim();
-            const words = text.split(/\s+/).filter(Boolean);
-            if (!text || words.length < 50) {
-                const el = document.getElementById('readability-error');
-                el.textContent = 'INSUFFICIENT EVIDENCE — Paste at least 50 words.';
-                el.style.display = 'block';
-                return;
+            // Helpers
+            progress: function(pct) {
+                var f = document.getElementById('terminalProgressFill');
+                var t = document.getElementById('progressText');
+                if (f) f.style.width = pct+'%';
+                if (t) t.textContent  = pct+'% COMPLETE';
+            },
+            metric: function(id, val) {
+                var el = document.getElementById(id);
+                if (el) el.textContent = val;
+            },
+            log: function(msg, type) {
+                var stream = document.getElementById('terminalLogStream');
+                if (!stream) return;
+                var now = new Date().toTimeString().slice(0,8);
+                var div = document.createElement('div');
+                div.className = 'log-line'
+                    +(type==='warning'?' warning':type==='success'?' success':'');
+                div.textContent = '['+now+'] '+msg;
+                stream.appendChild(div);
+                stream.scrollTop = stream.scrollHeight;
             }
-            document.getElementById('readability-error').style.display = 'none';
+        };
 
-            const sentences = getSentences(text);
-            const sentenceCount = Math.max(sentences.length, 1);
-            const wordCount = words.length;
-
-            // Syllable count
-            const syllableCounts = words.map(w => countSyllables(w));
-            const totalSyllables = syllableCounts.reduce((a,b) => a+b, 0);
-            const avgSyllables = totalSyllables / wordCount;
-
-            // Complex words
-            const complexWords = words.filter(w => isComplex(w));
-            const complexPct = (complexWords.length / wordCount) * 100;
-
-            // Sentence lengths
-            const sentLengths = sentences.map(s => s.split(/\s+/).filter(Boolean).length);
-            const avgSentLen = sentLengths.reduce((a,b)=>a+b,0) / sentenceCount;
-            const maxSentLen = Math.max(...sentLengths);
-
-            // Flesch-Kincaid Grade Level
-            const fk = 0.39 * (wordCount / sentenceCount) + 11.8 * (totalSyllables / wordCount) - 15.59;
-
-            // Gunning Fog Index
-            const fog = 0.4 * ((wordCount / sentenceCount) + (complexWords.length / wordCount) * 100);
-
-            // Vocabulary diversity (Type-Token Ratio)
-            const uniqueWords = new Set(words.map(w => w.toLowerCase().replace(/[^a-z]/g, '')));
-            const ttr = (uniqueWords.size / wordCount) * 100;
-
-            // Dialogue density
-            const dialogueSentences = sentences.filter(isDialogue).length;
-            const dialoguePct = (dialogueSentences / sentenceCount) * 100;
-
-            // Dense sentences (top 3 longest)
-            const sentWithIdx = sentences.map((s,i) => ({ s, len: sentLengths[i] }))
-                .sort((a,b) => b.len - a.len).slice(0,3);
-
-            // Top complex words (unique, sorted by syllables)
-            const complexUnique = [...new Set(complexWords.map(w => w.toLowerCase().replace(/[^a-z]/g,'')))]
-                .sort((a,b) => countSyllables(b) - countSyllables(a)).slice(0, 20);
-
-            // Grade color
-            const gradeClass = v => v <= 8 ? 'read-grade-easy' : v <= 12 ? 'read-grade-mid' : 'read-grade-hard';
-            const gradeLabel = v => v <= 6 ? 'EASY READ' : v <= 8 ? 'ACCESSIBLE' : v <= 10 ? 'MODERATE' : v <= 12 ? 'CHALLENGING' : 'VERY DENSE';
-
-            // Verdict
-            const verdictParts = [];
-            if (fk > 12) verdictParts.push('prose is very dense — consider breaking up long sentences');
-            else if (fk < 7) verdictParts.push('prose is very accessible — good for fast-paced thriller sections');
-            else verdictParts.push('prose complexity is well-suited for adult mystery fiction');
-            if (complexPct > 20) verdictParts.push(`${complexPct.toFixed(0)}% complex words is high — readers may slow down`);
-            if (dialoguePct < 15) verdictParts.push('low dialogue density — consider adding more spoken exchanges to vary rhythm');
-            else if (dialoguePct > 60) verdictParts.push('high dialogue density — ensure prose sections are anchoring the action');
-            if (ttr < 40) verdictParts.push('vocabulary diversity is low — some words may be overused');
-            else if (ttr > 70) verdictParts.push('vocabulary is highly varied — strong lexical range');
-
-            // Bar helper
-            const bar = (label, val, max, color, unit='') => `
-                <div class="read-bar-row">
-                    <div class="read-bar-label">${label}</div>
-                    <div class="read-bar-track">
-                        <div class="read-bar-fill" style="width:${Math.min(100,(val/max)*100).toFixed(1)}%;background:${color}"></div>
-                    </div>
-                    <div class="read-bar-val">${typeof val === 'number' ? val.toFixed(1) : val}${unit}</div>
-                </div>`;
-
-            document.getElementById('readability-results').innerHTML = `
-                <div class="read-verdict">
-                    <div class="read-verdict-label">EDITORIAL VERDICT</div>
-                    <div class="read-verdict-text">${verdictParts.map((p,i) => i===0 ? p.charAt(0).toUpperCase()+p.slice(1) : p).join('. ')}.</div>
-                </div>
-
-                <div class="readability-grid">
-                    <div class="read-metric">
-                        <div class="read-metric-label">FLESCH-KINCAID</div>
-                        <div class="read-metric-value ${gradeClass(fk)}">GR. ${fk.toFixed(1)}</div>
-                        <div class="read-metric-sub">${gradeLabel(fk)}</div>
-                    </div>
-                    <div class="read-metric">
-                        <div class="read-metric-label">GUNNING FOG</div>
-                        <div class="read-metric-value ${gradeClass(fog)}">${fog.toFixed(1)}</div>
-                        <div class="read-metric-sub">${fog <= 8 ? 'EASY' : fog <= 12 ? 'MODERATE' : 'COMPLEX'}</div>
-                    </div>
-                    <div class="read-metric">
-                        <div class="read-metric-label">AVG SENTENCE</div>
-                        <div class="read-metric-value ${avgSentLen > 25 ? 'read-grade-hard' : avgSentLen > 15 ? 'read-grade-mid' : 'read-grade-easy'}">${avgSentLen.toFixed(1)}</div>
-                        <div class="read-metric-sub">WORDS / SENTENCE</div>
-                    </div>
-                    <div class="read-metric">
-                        <div class="read-metric-label">VOCAB DIVERSITY</div>
-                        <div class="read-metric-value ${ttr > 60 ? 'read-grade-easy' : ttr > 40 ? 'read-grade-mid' : 'read-grade-hard'}">${ttr.toFixed(0)}%</div>
-                        <div class="read-metric-sub">TYPE-TOKEN RATIO</div>
-                    </div>
-                    <div class="read-metric">
-                        <div class="read-metric-label">COMPLEX WORDS</div>
-                        <div class="read-metric-value ${complexPct > 20 ? 'read-grade-hard' : complexPct > 12 ? 'read-grade-mid' : 'read-grade-easy'}">${complexPct.toFixed(1)}%</div>
-                        <div class="read-metric-sub">${complexWords.length} / ${wordCount} WORDS</div>
-                    </div>
-                    <div class="read-metric">
-                        <div class="read-metric-label">DIALOGUE DENSITY</div>
-                        <div class="read-metric-value ${gradeClass(10 - dialoguePct/10)}">${dialoguePct.toFixed(0)}%</div>
-                        <div class="read-metric-sub">OF SENTENCES</div>
-                    </div>
-                </div>
-
-                <div class="read-section">
-                    <div class="read-section-title">COMPLEXITY BREAKDOWN</div>
-                    ${bar('Avg sentence length', avgSentLen, 40, 'var(--amber)', ' words')}
-                    ${bar('Complex word ratio', complexPct, 40, 'var(--red-bright)', '%')}
-                    ${bar('Vocab diversity', ttr, 100, 'var(--green)', '%')}
-                    ${bar('Dialogue density', dialoguePct, 100, 'var(--steel-blue)', '%')}
-                    ${bar('Avg syllables/word', avgSyllables, 4, 'var(--amber)')}
-                </div>
-
-                <div class="read-section">
-                    <div class="read-section-title">DENSEST SENTENCES — CONSIDER SPLITTING</div>
-                    <div class="dense-sentences">
-                        ${sentWithIdx.map(({s, len}) => `
-                        <div class="dense-item">
-                            <div class="dense-item-meta">${len} WORDS</div>
-                            <div class="dense-item-text">"${s.slice(0,200)}${s.length > 200 ? '...' : ''}"</div>
-                        </div>`).join('')}
-                    </div>
-                </div>
-
-                <div class="read-section">
-                    <div class="read-section-title">COMPLEX VOCABULARY (3+ SYLLABLES)</div>
-                    <div class="vocab-words">
-                        ${complexUnique.map(w => `<span class="vocab-word complex">${w}</span>`).join('')}
-                    </div>
-                    <div style="font-family:var(--font-mono);font-size:0.72rem;color:#555;margin-top:1rem;">
-                        ${uniqueWords.size} UNIQUE WORDS TOTAL · ${wordCount} TOTAL WORDS · ${sentenceCount} SENTENCES
-                    </div>
-                </div>`;
-
-            document.getElementById('readability-results').style.display = 'block';
-            trackEvent('readability');
-            setTimeout(() => document.getElementById('readability-results').scrollIntoView({ behavior: 'smooth', block: 'start' }), 150);
-        }
-
-        // ── ANALYTICS ──
-        async function trackEvent(event) {
-            try {
-                await fetch('/api/analytics', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ event })
-                });
-            } catch (_) { /* never break the app */ }
-        }
-
-        async function loadStats() {
-            try {
-                const res = await fetch('/api/analytics');
-                const data = await res.json();
-                document.getElementById('stat-analyze').textContent     = data.analyze     || '0';
-                document.getElementById('stat-compare').textContent     = data.compare     || '0';
-                document.getElementById('stat-characters').textContent  = data.characters  || '0';
-                document.getElementById('stat-sentiment').textContent   = data.sentiment   || '0';
-                document.getElementById('stat-readability').textContent = data.readability || '0';
-                document.getElementById('stat-visits').textContent      = data.visits      || '0';
-            } catch (_) { /* silently fail */ }
-        }
-
-        // ── Init on load ──
-        renderSidebarHistory();
-        trackEvent('visit');
-        loadStats();
+    }); // end window.onload
     </script>
 </body>
 </html>
