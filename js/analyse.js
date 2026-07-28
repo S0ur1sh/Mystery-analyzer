@@ -73,27 +73,26 @@ const AnalyseEngine = {
 
         // File Upload Handler (.pdf, .txt)
         if (fileInput && textarea) {
-            fileInput.addEventListener('change', (e) => {
+            fileInput.addEventListener('change', async (e) => {
                 const file = e.target.files[0];
                 if (!file) return;
 
                 if (statusTag) statusTag.innerText = `LOADING: ${file.name}...`;
 
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    const content = event.target.result;
-                    const cleanText = typeof content === 'string' 
-                        ? content.replace(/[^\x20-\x7E\n\r\t]/g, ' ') 
-                        : 'PDF Manuscript loaded.';
-                    
+                try {
+                    const cleanText = await window.extractFileText(file);
+                    if (!cleanText) throw new Error('No readable text was found in this file.');
                     textarea.value = cleanText;
                     if (window.GlobalManuscriptState) {
                         window.GlobalManuscriptState.text = cleanText;
                         window.GlobalManuscriptState.fileName = file.name;
                     }
                     if (statusTag) statusTag.innerText = `FILE LOADED: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
-                };
-                reader.readAsText(file);
+                } catch (error) {
+                    console.error('File extraction failed:', error);
+                    if (statusTag) statusTag.innerText = `FILE ERROR: ${error.message}`;
+                    alert(`Could not read ${file.name}. ${error.message}`);
+                }
             });
         }
 
@@ -136,7 +135,7 @@ Meanwhile, Officer Chen reported no activity on CCTV, but audit logs show the vi
                     const response = await fetch('/api/analyze', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ text, prompt: text })
+                        body: JSON.stringify({ text })
                     });
 
                     if (response.ok) {
@@ -148,8 +147,7 @@ Meanwhile, Officer Chen reported no activity on CCTV, but audit logs show the vi
                     console.log('Real API unavailable, using simulated neural engine.');
                 }
 
-                setTimeout(() => {
-                    this.renderResults(resultsPanel, {
+                this.renderResults(resultsPanel, {
                         anomalyIndex: '89.4%',
                         clues: [
                             '[TIMELINE DISCREPANCY] 12-minute window mismatch between Witness A observation (21:45) and badge swipe (21:57).',
@@ -160,8 +158,7 @@ Meanwhile, Officer Chen reported no activity on CCTV, but audit logs show the vi
                             { label: 'TIMELINE CONFLICT', pct: 92, color: 'red' },
                             { label: 'ALIBI INTEGRITY', pct: 78, color: 'orange' }
                         ]
-                    });
-                }, 800);
+                });
             });
         }
     },
