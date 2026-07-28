@@ -153,7 +153,7 @@ Head of Facility Security. Off-book payments received via untraceable crypto wal
                     const response = await fetch('/api/characters', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ text })
+                        body: JSON.stringify({ chapters: [text] })
                     });
 
                     if (response.ok) {
