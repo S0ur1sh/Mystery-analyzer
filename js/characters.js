@@ -84,27 +84,26 @@ const CharactersEngine = {
 
         // File Upload — load and share to global state
         if (fileInput && textarea) {
-            fileInput.addEventListener('change', (e) => {
+            fileInput.addEventListener('change', async (e) => {
                 const file = e.target.files[0];
                 if (!file) return;
 
                 if (statusTag) statusTag.innerText = `LOADING: ${file.name}...`;
 
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    const content = event.target.result;
-                    const cleanText = typeof content === 'string'
-                        ? content.replace(/[^\x20-\x7E\n\r\t]/g, ' ')
-                        : 'Manuscript loaded.';
-
+                try {
+                    const cleanText = await window.extractFileText(file);
+                    if (!cleanText) throw new Error('No readable text was found in this file.');
                     textarea.value = cleanText;
                     if (window.GlobalManuscriptState) {
                         window.GlobalManuscriptState.text = cleanText;
                         window.GlobalManuscriptState.fileName = file.name;
                     }
                     if (statusTag) statusTag.innerText = `✓ FILE LOADED & SHARED: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
-                };
-                reader.readAsText(file);
+                } catch (error) {
+                    console.error('File extraction failed:', error);
+                    if (statusTag) statusTag.innerText = `FILE ERROR: ${error.message}`;
+                    alert(`Could not read ${file.name}. ${error.message}`);
+                }
             });
         }
 
@@ -158,6 +157,20 @@ Head of Facility Security. Off-book payments received via untraceable crypto wal
 
                     if (response.ok) {
                         const data = await response.json();
+                        if (window.heroVisualizer && Array.isArray(data.characters)) {
+                            window.heroVisualizer.update({
+                                nodes: data.characters.map((character, index) => ({
+                                    id: `SUBJECT ${String.fromCharCode(65 + index)}`,
+                                    label: character.name,
+                                    probability: ({
+                                        Consistent: '92%',
+                                        'Minor Issues': '68%',
+                                        'Needs Attention': '42%'
+                                    })[character.status] || '75%',
+                                    threat: character.role || 'SUBJECT'
+                                }))
+                            });
+                        }
                         this.renderDossiers(gridPanel, data);
                         return;
                     }
@@ -166,10 +179,8 @@ Head of Facility Security. Off-book payments received via untraceable crypto wal
                 }
 
                 // Local fallback profiler — extracts names from text heuristically
-                setTimeout(() => {
-                    const localChars = this.localExtractCharacters(text);
-                    this.renderDossiers(gridPanel, { characters: localChars });
-                }, 600);
+                const localChars = this.localExtractCharacters(text);
+                this.renderDossiers(gridPanel, { characters: localChars });
             });
         }
     },
