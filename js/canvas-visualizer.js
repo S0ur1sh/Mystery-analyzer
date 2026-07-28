@@ -45,6 +45,43 @@ class HeroVisualizer {
         ];
     }
 
+    // Public API: replace the demo nodes with real character data.
+    update(data = {}) {
+        const nodes = Array.isArray(data) ? data : data.nodes;
+        if (Array.isArray(nodes)) this.setNodes(nodes);
+        if (typeof data.selectedNodeIndex === 'number') this.selectNode(data.selectedNodeIndex);
+    }
+
+    setNodes(nodes) {
+        const width = this.canvas.width || 600;
+        const height = this.canvas.height || 420;
+        const radius = Math.min(width, height) * 0.30;
+        const palette = ['#ff1100', '#ffaa00', '#00ff66', '#ff5500', '#aa66ff'];
+
+        this.nodes = nodes.slice(0, 6).map((node, index) => {
+            const angle = (index / Math.max(nodes.length, 1)) * Math.PI * 2 - Math.PI / 2;
+            return {
+                id: node.id || `SUBJECT ${String.fromCharCode(65 + index)}`,
+                label: node.label || node.name || 'Unknown',
+                x: Number.isFinite(node.x) ? node.x : width / 2 + Math.cos(angle) * radius,
+                y: Number.isFinite(node.y) ? node.y : height / 2 + Math.sin(angle) * radius,
+                radius: Number(node.radius) || 16,
+                color: node.color || palette[index % palette.length],
+                prob: node.prob || node.probability || 'N/A',
+                threat: node.threat || node.status || 'UNASSESSED'
+            };
+        });
+
+        this.selectedNodeIndex = 0;
+        if (this.nodes[0]) this.updateHudReadout(this.nodes[0]);
+    }
+
+    selectNode(index) {
+        if (index < 0 || index >= this.nodes.length) return;
+        this.selectedNodeIndex = index;
+        this.updateHudReadout(this.nodes[index]);
+    }
+
     initWaveform() {
         const barsContainer = document.getElementById('waveformBars');
         if (!barsContainer) return;
@@ -192,5 +229,5 @@ class HeroVisualizer {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    new HeroVisualizer('heroVisualCanvas');
+    window.heroVisualizer = new HeroVisualizer('heroVisualCanvas');
 });
