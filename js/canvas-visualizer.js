@@ -45,43 +45,6 @@ class HeroVisualizer {
         ];
     }
 
-    // Public API: replace the demo nodes with real character data.
-    update(data = {}) {
-        const nodes = Array.isArray(data) ? data : data.nodes;
-        if (Array.isArray(nodes)) this.setNodes(nodes);
-        if (typeof data.selectedNodeIndex === 'number') this.selectNode(data.selectedNodeIndex);
-    }
-
-    setNodes(nodes) {
-        const width = this.canvas.width || 600;
-        const height = this.canvas.height || 420;
-        const radius = Math.min(width, height) * 0.30;
-        const palette = ['#ff1100', '#ffaa00', '#00ff66', '#ff5500', '#aa66ff'];
-
-        this.nodes = nodes.slice(0, 6).map((node, index) => {
-            const angle = (index / Math.max(nodes.length, 1)) * Math.PI * 2 - Math.PI / 2;
-            return {
-                id: node.id || `SUBJECT ${String.fromCharCode(65 + index)}`,
-                label: node.label || node.name || 'Unknown',
-                x: Number.isFinite(node.x) ? node.x : width / 2 + Math.cos(angle) * radius,
-                y: Number.isFinite(node.y) ? node.y : height / 2 + Math.sin(angle) * radius,
-                radius: Number(node.radius) || 16,
-                color: node.color || palette[index % palette.length],
-                prob: node.prob || node.probability || 'N/A',
-                threat: node.threat || node.status || 'UNASSESSED'
-            };
-        });
-
-        this.selectedNodeIndex = 0;
-        if (this.nodes[0]) this.updateHudReadout(this.nodes[0]);
-    }
-
-    selectNode(index) {
-        if (index < 0 || index >= this.nodes.length) return;
-        this.selectedNodeIndex = index;
-        this.updateHudReadout(this.nodes[index]);
-    }
-
     initWaveform() {
         const barsContainer = document.getElementById('waveformBars');
         if (!barsContainer) return;
@@ -212,6 +175,50 @@ class HeroVisualizer {
         });
     }
 
+    updateNodes(characters) {
+        if (!characters || characters.length === 0) return;
+        const cx = this.canvas.width / 2;
+        const cy = this.canvas.height / 2;
+        const r  = Math.min(this.canvas.width, this.canvas.height) * 0.30;
+
+        const colorMap = {
+            protagonist: '#ff1100',
+            antagonist:  '#ff6600',
+            supporting:  '#ffaa00',
+            mentioned:   '#00ff66'
+        };
+        const threatMap = {
+            protagonist: 'PATTERN RED',
+            antagonist:  'PATTERN RED',
+            supporting:  'PATTERN ORANGE',
+            mentioned:   'PATTERN GREEN'
+        };
+
+        this.nodes = characters.slice(0, 6).map((char, i) => {
+            const angle  = (i / Math.min(characters.length, 6)) * Math.PI * 2 - Math.PI / 2;
+            const role   = (char.role || 'mentioned').toLowerCase();
+            const score  = char.status === 'Needs Attention' ? '91.8%'
+                         : char.status === 'Minor Issues'    ? '64.2%'
+                         : '42.0%';
+
+            return {
+                id:     'SUBJECT ' + String.fromCharCode(65 + i),
+                label:  char.name || 'Unknown',
+                x:      cx + r * Math.cos(angle),
+                y:      cy + r * Math.sin(angle),
+                radius: role === 'protagonist' ? 20 : role === 'antagonist' ? 18 : 14,
+                color:  colorMap[role] || '#ffaa00',
+                prob:   score,
+                threat: threatMap[role] || 'PATTERN ORANGE'
+            };
+        });
+
+        // Update HUD to show first character
+        if (this.nodes.length > 0) {
+            this.updateHudReadout(this.nodes[0]);
+        }
+    }
+
     animate() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         
@@ -229,5 +236,12 @@ class HeroVisualizer {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    window.heroVisualizer = new HeroVisualizer('heroVisualCanvas');
+    window._heroVisualizer = new HeroVisualizer('heroVisualCanvas');
 });
+
+// Global function so patch script and characters engine can call it
+window.updateVisualizerData = function(characters) {
+    if (window._heroVisualizer) {
+        window._heroVisualizer.updateNodes(characters);
+    }
+};
