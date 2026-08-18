@@ -86,14 +86,28 @@ const CompareEngine = {
             pdf1.addEventListener('change', async (e) => {
                 const file = e.target.files[0];
                 if (!file) return;
-                try {
-                    const content = await window.extractFileText(file);
-                    text1.value = `[MANUSCRIPT 01: ${file.name}]\n\n${content}`;
-                    if (tag1) tag1.innerText = `LOADED: ${file.name}`;
-                } catch (error) {
-                    console.error('File 1 extraction failed:', error);
-                    if (tag1) tag1.innerText = `FILE ERROR: ${error.message}`;
-                    alert(`Could not read ${file.name}. ${error.message}`);
+                if (file.name.toLowerCase().endsWith('.pdf') && typeof pdfjsLib !== 'undefined') {
+                    try {
+                        const buf = await file.arrayBuffer();
+                        const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+                        let extracted = '';
+                        for (let i = 1; i <= pdf.numPages; i++) {
+                            const page = await pdf.getPage(i);
+                            const content = await page.getTextContent();
+                            extracted += content.items.map(it => it.str).join(' ') + '\n\n';
+                        }
+                        text1.value = extracted.trim();
+                        if (tag1) tag1.innerText = `LOADED: ${file.name}`;
+                    } catch (err) {
+                        if (tag1) tag1.innerText = `PDF ERROR: ${err.message}`;
+                    }
+                } else {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        text1.value = `[MANUSCRIPT 01: ${file.name}]\n\n` + event.target.result;
+                        if (tag1) tag1.innerText = `LOADED: ${file.name}`;
+                    };
+                    reader.readAsText(file);
                 }
             });
         }
@@ -103,14 +117,28 @@ const CompareEngine = {
             pdf2.addEventListener('change', async (e) => {
                 const file = e.target.files[0];
                 if (!file) return;
-                try {
-                    const content = await window.extractFileText(file);
-                    text2.value = `[MANUSCRIPT 02: ${file.name}]\n\n${content}`;
-                    if (tag2) tag2.innerText = `LOADED: ${file.name}`;
-                } catch (error) {
-                    console.error('File 2 extraction failed:', error);
-                    if (tag2) tag2.innerText = `FILE ERROR: ${error.message}`;
-                    alert(`Could not read ${file.name}. ${error.message}`);
+                if (file.name.toLowerCase().endsWith('.pdf') && typeof pdfjsLib !== 'undefined') {
+                    try {
+                        const buf = await file.arrayBuffer();
+                        const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+                        let extracted = '';
+                        for (let i = 1; i <= pdf.numPages; i++) {
+                            const page = await pdf.getPage(i);
+                            const content = await page.getTextContent();
+                            extracted += content.items.map(it => it.str).join(' ') + '\n\n';
+                        }
+                        text2.value = extracted.trim();
+                        if (tag2) tag2.innerText = `LOADED: ${file.name}`;
+                    } catch (err) {
+                        if (tag2) tag2.innerText = `PDF ERROR: ${err.message}`;
+                    }
+                } else {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        text2.value = `[MANUSCRIPT 02: ${file.name}]\n\n` + event.target.result;
+                        if (tag2) tag2.innerText = `LOADED: ${file.name}`;
+                    };
+                    reader.readAsText(file);
                 }
             });
         }
@@ -146,6 +174,8 @@ CCTV patrol log reports Dr. Vance badge swiped at inner lab door at 21:57. Video
                     </div>
                 `;
 
+                let apiSuccess = false;
+
                 try {
                     const response = await fetch('/api/compare', {
                         method: 'POST',
@@ -155,22 +185,54 @@ CCTV patrol log reports Dr. Vance badge swiped at inner lab door at 21:57. Video
 
                     if (response.ok) {
                         const data = await response.json();
-                        this.renderComparisonResults(resultsPanel, data);
-                        return;
+                        // Transform our API response into renderComparisonResults format
+                        const changeClass = { Improved: '✓ IMPROVED', Same: '= UNCHANGED', Weakened: '⚠ WEAKENED' };
+                        const transformed = {
+                            matchLikelihood: (data.winner || 'DRAFT 2') + ' PREVAILS — ' + (data.verdict || '').slice(0, 60),
+                            summary: data.key_advice || data.verdict || 'Analysis complete.',
+                            contradictions: [
+                                ...(data.improvements || []).map(i => ({
+                                    topic: '✓ IMPROVEMENT',
+                                    val1: i.title || '',
+                                    val2: i.detail || ''
+                                })),
+                                ...(data.regressions || []).map(r => ({
+                                    topic: '⚠ REGRESSION',
+                                    val1: r.title || '',
+                                    val2: r.detail || ''
+                                })),
+                                ...(data.unchanged_issues || []).map(u => ({
+                                    topic: '= UNCHANGED ISSUE',
+                                    val1: u.title || '',
+                                    val2: u.detail || ''
+                                })),
+                                ...Object.entries(data.score_change || {}).map(([k, v]) => ({
+                                    topic: k.toUpperCase() + ' SCORE',
+                                    val1: 'Draft 1',
+                                    val2: changeClass[v] || v
+                                }))
+                            ]
+                        };
+                        this.renderComparisonResults(resultsPanel, transformed);
+                        apiSuccess = true;
                     }
                 } catch (e) {
-                    console.log('Real API unavailable, running simulated differential comparison engine.');
+                    console.log('Compare API offline — running simulated differential engine.');
                 }
 
-                this.renderComparisonResults(resultsPanel, {
-                        matchLikelihood: '89.7% [HIGH COLLUSION LINK]',
-                        summary: 'Dr. Vance timeline conflicts directly with Officer Chen CCTV audit log.',
-                        contradictions: [
-                            { topic: 'TIMELINE', val1: 'In office reading at 21:45', val2: 'Badge swipe at 21:57 (Impossibility)' },
-                            { topic: 'CCTV RECORD', val1: 'Stated no unusual events', val2: '15-minute manual video loop detected' },
-                            { topic: 'COLLUSION RISK', val1: 'Denies knowing Chen well', val2: 'Encrypt crypto transfer logs found' }
-                        ]
-                });
+                if (!apiSuccess) {
+                    setTimeout(() => {
+                        this.renderComparisonResults(resultsPanel, {
+                            matchLikelihood: '89.7% [HIGH COLLUSION LINK]',
+                            summary: 'Dr. Vance timeline conflicts directly with Officer Chen CCTV audit log.',
+                            contradictions: [
+                                { topic: 'TIMELINE', val1: 'In office reading at 21:45', val2: 'Badge swipe at 21:57 (Impossibility)' },
+                                { topic: 'CCTV RECORD', val1: 'Stated no unusual events', val2: '15-minute manual video loop detected' },
+                                { topic: 'COLLUSION RISK', val1: 'Denies knowing Chen well', val2: 'Encrypt crypto transfer logs found' }
+                            ]
+                        });
+                    }, 800);
+                }
             });
         }
     },
