@@ -87,22 +87,40 @@ const CharactersEngine = {
             fileInput.addEventListener('change', async (e) => {
                 const file = e.target.files[0];
                 if (!file) return;
-
                 if (statusTag) statusTag.innerText = `LOADING: ${file.name}...`;
 
-                try {
-                    const cleanText = await window.extractFileText(file);
-                    if (!cleanText) throw new Error('No readable text was found in this file.');
-                    textarea.value = cleanText;
-                    if (window.GlobalManuscriptState) {
-                        window.GlobalManuscriptState.text = cleanText;
-                        window.GlobalManuscriptState.fileName = file.name;
+                if (file.name.toLowerCase().endsWith('.pdf') && typeof pdfjsLib !== 'undefined') {
+                    try {
+                        const buf = await file.arrayBuffer();
+                        const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+                        let extracted = '';
+                        for (let i = 1; i <= pdf.numPages; i++) {
+                            const page = await pdf.getPage(i);
+                            const content = await page.getTextContent();
+                            extracted += content.items.map(it => it.str).join(' ') + '\n\n';
+                        }
+                        const cleanText = extracted.trim();
+                        textarea.value = cleanText;
+                        if (window.GlobalManuscriptState) {
+                            window.GlobalManuscriptState.text = cleanText;
+                            window.GlobalManuscriptState.fileName = file.name;
+                        }
+                        if (statusTag) statusTag.innerText = `✓ FILE LOADED & SHARED: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+                    } catch (err) {
+                        if (statusTag) statusTag.innerText = `PDF ERROR: ${err.message}`;
                     }
-                    if (statusTag) statusTag.innerText = `✓ FILE LOADED & SHARED: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
-                } catch (error) {
-                    console.error('File extraction failed:', error);
-                    if (statusTag) statusTag.innerText = `FILE ERROR: ${error.message}`;
-                    alert(`Could not read ${file.name}. ${error.message}`);
+                } else {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        const cleanText = (event.target.result || '').replace(/[^\x20-\x7E\n\r\t]/g, ' ');
+                        textarea.value = cleanText;
+                        if (window.GlobalManuscriptState) {
+                            window.GlobalManuscriptState.text = cleanText;
+                            window.GlobalManuscriptState.fileName = file.name;
+                        }
+                        if (statusTag) statusTag.innerText = `✓ FILE LOADED & SHARED: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+                    };
+                    reader.readAsText(file);
                 }
             });
         }
@@ -157,21 +175,7 @@ Head of Facility Security. Off-book payments received via untraceable crypto wal
 
                     if (response.ok) {
                         const data = await response.json();
-                        if (window.heroVisualizer && Array.isArray(data.characters)) {
-                            window.heroVisualizer.update({
-                                nodes: data.characters.map((character, index) => ({
-                                    id: `SUBJECT ${String.fromCharCode(65 + index)}`,
-                                    label: character.name,
-                                    probability: ({
-                                        Consistent: '92%',
-                                        'Minor Issues': '68%',
-                                        'Needs Attention': '42%'
-                                    })[character.status] || '75%',
-                                    threat: character.role || 'SUBJECT'
-                                }))
-                            });
-                        }
-                        this.renderDossiers(gridPanel, data);
+                        this.renderDossiers(gridPanel, this.transformApiResponse(data));
                         return;
                     }
                 } catch (e) {
@@ -179,8 +183,10 @@ Head of Facility Security. Off-book payments received via untraceable crypto wal
                 }
 
                 // Local fallback profiler — extracts names from text heuristically
-                const localChars = this.localExtractCharacters(text);
-                this.renderDossiers(gridPanel, { characters: localChars });
+                setTimeout(() => {
+                    const localChars = this.localExtractCharacters(text);
+                    this.renderDossiers(gridPanel, { characters: localChars });
+                }, 600);
             });
         }
     },
@@ -265,6 +271,45 @@ Head of Facility Security. Off-book payments received via untraceable crypto wal
         const words = text.toLowerCase().split(/\W+/);
         const found = [...new Set(words.filter(w => traitMap[w]).map(w => traitMap[w]))];
         return found.length > 0 ? found.slice(0, 4) : ['Requires Full Analysis'];
+    },
+
+    // Transform our /api/characters response format into what renderDossiers expects
+    transformApiResponse(data) {
+        const roleLabels = {
+            protagonist: 'Lead Character',
+            antagonist:  'Antagonist',
+            supporting:  'Supporting Character',
+            mentioned:   'Minor Character'
+        };
+        const threatLabels = {
+            'Consistent':      '42% [KEY WITNESS]',
+            'Minor Issues':    '68% [PERSON OF INTEREST]',
+            'Needs Attention': '91% [CRITICAL SUSPECT]'
+        };
+        const threatClasses = {
+            'Consistent':      'text-neon-orange',
+            'Minor Issues':    'text-orange',
+            'Needs Attention': 'text-alert-red'
+        };
+
+        return {
+            characters: (data.characters || []).map(c => {
+                const inconsistencies = (c.inconsistencies || [])
+                    .map(i => i.title + ': ' + i.detail).join(' | ');
+
+                return {
+                    name:        c.name  || 'Unknown',
+                    role:        roleLabels[(c.role||'').toLowerCase()] || c.role || 'Unknown Role',
+                    motive:      c.arc_notes || inconsistencies || 'No motive data extracted.',
+                    alibi:       c.dialogue_style
+                                    ? 'Dialogue style: ' + c.dialogue_style
+                                    : 'No alibi data in manuscript.',
+                    traits:      c.traits && c.traits.length ? c.traits : ['Requires Full Analysis'],
+                    threat:      threatLabels[c.status] || '65% [UNDER INVESTIGATION]',
+                    threatClass: threatClasses[c.status] || 'text-orange'
+                };
+            })
+        };
     },
 
     renderDossiers(container, data) {
