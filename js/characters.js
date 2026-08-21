@@ -105,20 +105,20 @@ const CharactersEngine = {
                             window.GlobalManuscriptState.text = cleanText;
                             window.GlobalManuscriptState.fileName = file.name;
                         }
-                        if (statusTag) statusTag.innerText = `✓ FILE LOADED & SHARED: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+                        if (statusTag) statusTag.innerText = `✓ LOADED: ${file.name}`;
                     } catch (err) {
                         if (statusTag) statusTag.innerText = `PDF ERROR: ${err.message}`;
                     }
                 } else {
                     const reader = new FileReader();
                     reader.onload = (event) => {
-                        const cleanText = (event.target.result || '').replace(/[^\x20-\x7E\n\r\t]/g, ' ');
+                        const cleanText = (event.target.result||'').replace(/[^\x20-\x7E\n\r\t]/g,' ');
                         textarea.value = cleanText;
                         if (window.GlobalManuscriptState) {
                             window.GlobalManuscriptState.text = cleanText;
                             window.GlobalManuscriptState.fileName = file.name;
                         }
-                        if (statusTag) statusTag.innerText = `✓ FILE LOADED & SHARED: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+                        if (statusTag) statusTag.innerText = `✓ LOADED: ${file.name}`;
                     };
                     reader.readAsText(file);
                 }
@@ -173,13 +173,27 @@ Head of Facility Security. Off-book payments received via untraceable crypto wal
                         body: JSON.stringify({ chapters: [text] })
                     });
 
+                    const data = await response.json();
+
                     if (response.ok) {
-                        const data = await response.json();
                         this.renderDossiers(gridPanel, this.transformApiResponse(data));
+                        return;
+                    } else {
+                        gridPanel.innerHTML = `
+                            <div style="color:#ff5555;font-family:monospace;padding:2rem;">
+                                <strong>API ERROR ${response.status}</strong><br><br>
+                                ${data.error||JSON.stringify(data)}<br><br>
+                                <span style="color:#888;font-size:0.85rem;">Check GROQ_API_KEY in Vercel → Settings → Environment Variables.</span>
+                            </div>`;
                         return;
                     }
                 } catch (e) {
-                    console.log('Characters API offline — local profiler active.');
+                    gridPanel.innerHTML = `
+                        <div style="color:#ff5555;font-family:monospace;padding:2rem;">
+                            <strong>NETWORK ERROR</strong><br><br>${e.message}<br><br>
+                            <span style="color:#888;font-size:0.85rem;">API routes only work on deployed Vercel — not from a local file.</span>
+                        </div>`;
+                    return;
                 }
 
                 // Local fallback profiler — extracts names from text heuristically
@@ -273,42 +287,21 @@ Head of Facility Security. Off-book payments received via untraceable crypto wal
         return found.length > 0 ? found.slice(0, 4) : ['Requires Full Analysis'];
     },
 
-    // Transform our /api/characters response format into what renderDossiers expects
     transformApiResponse(data) {
-        const roleLabels = {
-            protagonist: 'Lead Character',
-            antagonist:  'Antagonist',
-            supporting:  'Supporting Character',
-            mentioned:   'Minor Character'
-        };
-        const threatLabels = {
-            'Consistent':      '42% [KEY WITNESS]',
-            'Minor Issues':    '68% [PERSON OF INTEREST]',
-            'Needs Attention': '91% [CRITICAL SUSPECT]'
-        };
-        const threatClasses = {
-            'Consistent':      'text-neon-orange',
-            'Minor Issues':    'text-orange',
-            'Needs Attention': 'text-alert-red'
-        };
+        const roleLabels  = { protagonist:'Lead Character', antagonist:'Antagonist', supporting:'Supporting Character', mentioned:'Minor Character' };
+        const threatLabels = { 'Consistent':'42% [KEY WITNESS]', 'Minor Issues':'68% [PERSON OF INTEREST]', 'Needs Attention':'91% [CRITICAL SUSPECT]' };
+        const threatClasses = { 'Consistent':'text-neon-orange', 'Minor Issues':'text-orange', 'Needs Attention':'text-alert-red' };
 
         return {
-            characters: (data.characters || []).map(c => {
-                const inconsistencies = (c.inconsistencies || [])
-                    .map(i => i.title + ': ' + i.detail).join(' | ');
-
-                return {
-                    name:        c.name  || 'Unknown',
-                    role:        roleLabels[(c.role||'').toLowerCase()] || c.role || 'Unknown Role',
-                    motive:      c.arc_notes || inconsistencies || 'No motive data extracted.',
-                    alibi:       c.dialogue_style
-                                    ? 'Dialogue style: ' + c.dialogue_style
-                                    : 'No alibi data in manuscript.',
-                    traits:      c.traits && c.traits.length ? c.traits : ['Requires Full Analysis'],
-                    threat:      threatLabels[c.status] || '65% [UNDER INVESTIGATION]',
-                    threatClass: threatClasses[c.status] || 'text-orange'
-                };
-            })
+            characters: (data.characters || []).map(c => ({
+                name:        c.name || 'Unknown',
+                role:        roleLabels[(c.role||'').toLowerCase()] || c.role || 'Unknown Role',
+                motive:      c.arc_notes || (c.inconsistencies||[]).map(i=>i.title+': '+i.detail).join(' | ') || 'No motive data extracted.',
+                alibi:       c.dialogue_style ? 'Dialogue: ' + c.dialogue_style : 'No alibi data in manuscript.',
+                traits:      c.traits && c.traits.length ? c.traits : ['Requires Full Analysis'],
+                threat:      threatLabels[c.status] || '65% [UNDER INVESTIGATION]',
+                threatClass: threatClasses[c.status] || 'text-orange'
+            }))
         };
     },
 
