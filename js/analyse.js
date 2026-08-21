@@ -79,7 +79,6 @@ const AnalyseEngine = {
                 if (statusTag) statusTag.innerText = `LOADING: ${file.name}...`;
 
                 if (file.name.toLowerCase().endsWith('.pdf') && typeof pdfjsLib !== 'undefined') {
-                    // PDF.js extraction — returns clean plain text
                     try {
                         const buf = await file.arrayBuffer();
                         const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
@@ -95,21 +94,20 @@ const AnalyseEngine = {
                             window.GlobalManuscriptState.text = cleanText;
                             window.GlobalManuscriptState.fileName = file.name;
                         }
-                        if (statusTag) statusTag.innerText = `FILE LOADED: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+                        if (statusTag) statusTag.innerText = `FILE LOADED: ${file.name} (${(file.size/1024).toFixed(1)} KB)`;
                     } catch (err) {
                         if (statusTag) statusTag.innerText = `PDF ERROR: ${err.message}`;
                     }
                 } else {
-                    // Plain text / markdown — FileReader is fine
                     const reader = new FileReader();
                     reader.onload = (event) => {
-                        const cleanText = (event.target.result || '').replace(/[^\x20-\x7E\n\r\t]/g, ' ');
+                        const cleanText = (event.target.result||'').replace(/[^\x20-\x7E\n\r\t]/g,' ');
                         textarea.value = cleanText;
                         if (window.GlobalManuscriptState) {
                             window.GlobalManuscriptState.text = cleanText;
                             window.GlobalManuscriptState.fileName = file.name;
                         }
-                        if (statusTag) statusTag.innerText = `FILE LOADED: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+                        if (statusTag) statusTag.innerText = `FILE LOADED: ${file.name} (${(file.size/1024).toFixed(1)} KB)`;
                     };
                     reader.readAsText(file);
                 }
@@ -148,10 +146,7 @@ Meanwhile, Officer Chen reported no activity on CCTV, but audit logs show the vi
                     <div class="loading-state">
                         <div class="spinner"></div>
                         <span>CONNECTING TO GROQ AI NEURAL ENGINE...</span>
-                    </div>
-                `;
-
-                let apiSuccess = false;
+                    </div>`;
 
                 try {
                     const response = await fetch('/api/analyze', {
@@ -160,53 +155,44 @@ Meanwhile, Officer Chen reported no activity on CCTV, but audit logs show the vi
                         body: JSON.stringify({ text })
                     });
 
+                    const data = await response.json();
+
                     if (response.ok) {
-                        const data = await response.json();
-                        // Transform our API format into renderResults format
-                        const scoreMap = { Strong: 95, Good: 78, Fair: 55, Weak: 30 };
-                        const scores = data.scores || {};
-                        const vals = Object.values(scores).map(s => scoreMap[s] || 60);
-                        const avg = vals.length ? Math.round(vals.reduce((a,b)=>a+b,0)/vals.length) : 75;
+                        const scoreMap = { Strong:95, Good:78, Fair:55, Weak:30 };
+                        const scores   = data.scores || {};
+                        const vals     = Object.values(scores).map(s => scoreMap[s]||60);
+                        const avg      = vals.length ? Math.round(vals.reduce((a,b)=>a+b,0)/vals.length) : 75;
 
-                        const transformed = {
-                            anomalyIndex: avg + '% CONFIDENCE [' + (scores.plot || 'ANALYZING') + ' PLOT INTEGRITY]',
-                            clues: [
-                                ...(data.plot_holes || []).map(h => '[PLOT HOLE] ' + h.title + ': ' + h.detail),
-                                ...(data.character_issues || []).map(c => '[CHARACTER ISSUE] ' + c.title + ': ' + c.detail),
-                                ...(data.tension_suggestions || []).map(t => '[TENSION] ' + t.title + ': ' + t.detail),
-                                ...(data.strengths || []).map(s => '[STRENGTH ✓] ' + s.title + ': ' + s.detail)
-                            ],
-                            vectors: [
-                                { label: 'PLOT INTEGRITY',          pct: scoreMap[scores.plot]       || 60, color: scores.plot       === 'Strong' ? 'green' : 'orange' },
-                                { label: 'CHARACTER CONSISTENCY',   pct: scoreMap[scores.characters] || 60, color: scores.characters === 'Strong' ? 'green' : 'orange' },
-                                { label: 'TENSION & SUSPENSE',      pct: scoreMap[scores.tension]    || 60, color: scores.tension    === 'Strong' ? 'green' : 'red' },
-                                { label: 'NARRATIVE PACING',        pct: scoreMap[scores.pacing]     || 60, color: scores.pacing     === 'Strong' ? 'green' : 'orange' }
-                            ]
-                        };
-
-                        this.renderResults(resultsPanel, transformed);
-                        apiSuccess = true;
-                    }
-                } catch (e) {
-                    console.log('Groq API unavailable, using simulated neural engine.');
-                }
-
-                // Only show dummy data if real API failed
-                if (!apiSuccess) {
-                    setTimeout(() => {
                         this.renderResults(resultsPanel, {
-                            anomalyIndex: '89.4%',
+                            anomalyIndex: avg + '% CONFIDENCE [' + (scores.plot||'ANALYZING') + ' PLOT]',
                             clues: [
-                                '[TIMELINE DISCREPANCY] 12-minute window mismatch between Witness A observation (21:45) and badge swipe (21:57).',
-                                '[PHYSICAL IMPOSSIBILITY] Distance across campus cannot be traversed in < 15 minutes on foot.',
-                                '[EVIDENCE TAMPERING] CCTV manual loop detected during Substation 04 power failure.'
+                                ...(data.plot_holes||[]).map(h=>'[PLOT HOLE] '+h.title+': '+h.detail),
+                                ...(data.character_issues||[]).map(c=>'[CHARACTER] '+c.title+': '+c.detail),
+                                ...(data.tension_suggestions||[]).map(t=>'[TENSION] '+t.title+': '+t.detail),
+                                ...(data.strengths||[]).map(s=>'[STRENGTH ✓] '+s.title+': '+s.detail)
                             ],
                             vectors: [
-                                { label: 'TIMELINE CONFLICT', pct: 92, color: 'red' },
-                                { label: 'ALIBI INTEGRITY', pct: 78, color: 'orange' }
+                                { label:'PLOT INTEGRITY',        pct:scoreMap[scores.plot]||60,       color:scores.plot==='Strong'?'green':'orange' },
+                                { label:'CHARACTER CONSISTENCY', pct:scoreMap[scores.characters]||60, color:scores.characters==='Strong'?'green':'orange' },
+                                { label:'TENSION & SUSPENSE',   pct:scoreMap[scores.tension]||60,    color:scores.tension==='Strong'?'green':'red' },
+                                { label:'NARRATIVE PACING',     pct:scoreMap[scores.pacing]||60,     color:scores.pacing==='Strong'?'green':'orange' }
                             ]
                         });
-                    }, 800);
+                    } else {
+                        resultsPanel.innerHTML = `
+                            <div class="analysis-report">
+                                <div class="report-badge">API ERROR ${response.status}</div>
+                                <p style="color:#ff5555;font-family:monospace;margin-top:1rem;">${data.error||JSON.stringify(data)}</p>
+                                <p style="color:#888;font-size:0.85rem;margin-top:0.5rem;">Check: GROQ_API_KEY is set in Vercel → Settings → Environment Variables. Also confirm the file is named <strong>analyze.js</strong> (not analyse.js) in your api/ folder.</p>
+                            </div>`;
+                    }
+                } catch (e) {
+                    resultsPanel.innerHTML = `
+                        <div class="analysis-report">
+                            <div class="report-badge">NETWORK ERROR</div>
+                            <p style="color:#ff5555;font-family:monospace;margin-top:1rem;">${e.message}</p>
+                            <p style="color:#888;font-size:0.85rem;margin-top:0.5rem;">API routes only work on Vercel — not when opening index.html directly from a file.</p>
+                        </div>`;
                 }
             });
         }
