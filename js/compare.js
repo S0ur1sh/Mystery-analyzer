@@ -103,10 +103,7 @@ const CompareEngine = {
                     }
                 } else {
                     const reader = new FileReader();
-                    reader.onload = (event) => {
-                        text1.value = `[MANUSCRIPT 01: ${file.name}]\n\n` + event.target.result;
-                        if (tag1) tag1.innerText = `LOADED: ${file.name}`;
-                    };
+                    reader.onload = (ev) => { text1.value = ev.target.result; if (tag1) tag1.innerText = `LOADED: ${file.name}`; };
                     reader.readAsText(file);
                 }
             });
@@ -134,10 +131,7 @@ const CompareEngine = {
                     }
                 } else {
                     const reader = new FileReader();
-                    reader.onload = (event) => {
-                        text2.value = `[MANUSCRIPT 02: ${file.name}]\n\n` + event.target.result;
-                        if (tag2) tag2.innerText = `LOADED: ${file.name}`;
-                    };
+                    reader.onload = (ev) => { text2.value = ev.target.result; if (tag2) tag2.innerText = `LOADED: ${file.name}`; };
                     reader.readAsText(file);
                 }
             });
@@ -171,10 +165,7 @@ CCTV patrol log reports Dr. Vance badge swiped at inner lab door at 21:57. Video
                     <div class="loading-state">
                         <div class="spinner"></div>
                         <span>EXECUTING CROSS-THEORY CONTRADICTION MATRIX...</span>
-                    </div>
-                `;
-
-                let apiSuccess = false;
+                    </div>`;
 
                 try {
                     const response = await fetch('/api/compare', {
@@ -183,55 +174,34 @@ CCTV patrol log reports Dr. Vance badge swiped at inner lab door at 21:57. Video
                         body: JSON.stringify({ text1: val1, text2: val2 })
                     });
 
+                    const data = await response.json();
+
                     if (response.ok) {
-                        const data = await response.json();
-                        // Transform our API response into renderComparisonResults format
-                        const changeClass = { Improved: '✓ IMPROVED', Same: '= UNCHANGED', Weakened: '⚠ WEAKENED' };
-                        const transformed = {
-                            matchLikelihood: (data.winner || 'DRAFT 2') + ' PREVAILS — ' + (data.verdict || '').slice(0, 60),
+                        const changeLabel = { Improved:'✓ IMPROVED', Same:'= UNCHANGED', Weakened:'⚠ WEAKENED' };
+                        this.renderComparisonResults(resultsPanel, {
+                            matchLikelihood: (data.winner||'DRAFT 2') + ' PREVAILS — ' + (data.verdict||'').slice(0,80),
                             summary: data.key_advice || data.verdict || 'Analysis complete.',
                             contradictions: [
-                                ...(data.improvements || []).map(i => ({
-                                    topic: '✓ IMPROVEMENT',
-                                    val1: i.title || '',
-                                    val2: i.detail || ''
-                                })),
-                                ...(data.regressions || []).map(r => ({
-                                    topic: '⚠ REGRESSION',
-                                    val1: r.title || '',
-                                    val2: r.detail || ''
-                                })),
-                                ...(data.unchanged_issues || []).map(u => ({
-                                    topic: '= UNCHANGED ISSUE',
-                                    val1: u.title || '',
-                                    val2: u.detail || ''
-                                })),
-                                ...Object.entries(data.score_change || {}).map(([k, v]) => ({
-                                    topic: k.toUpperCase() + ' SCORE',
-                                    val1: 'Draft 1',
-                                    val2: changeClass[v] || v
-                                }))
-                            ]
-                        };
-                        this.renderComparisonResults(resultsPanel, transformed);
-                        apiSuccess = true;
-                    }
-                } catch (e) {
-                    console.log('Compare API offline — running simulated differential engine.');
-                }
-
-                if (!apiSuccess) {
-                    setTimeout(() => {
-                        this.renderComparisonResults(resultsPanel, {
-                            matchLikelihood: '89.7% [HIGH COLLUSION LINK]',
-                            summary: 'Dr. Vance timeline conflicts directly with Officer Chen CCTV audit log.',
-                            contradictions: [
-                                { topic: 'TIMELINE', val1: 'In office reading at 21:45', val2: 'Badge swipe at 21:57 (Impossibility)' },
-                                { topic: 'CCTV RECORD', val1: 'Stated no unusual events', val2: '15-minute manual video loop detected' },
-                                { topic: 'COLLUSION RISK', val1: 'Denies knowing Chen well', val2: 'Encrypt crypto transfer logs found' }
+                                ...(data.improvements||[]).map(i=>({ topic:'✓ IMPROVEMENT', val1:i.title||'', val2:i.detail||'' })),
+                                ...(data.regressions||[]).map(r=>({ topic:'⚠ REGRESSION',   val1:r.title||'', val2:r.detail||'' })),
+                                ...(data.unchanged_issues||[]).map(u=>({ topic:'= UNCHANGED',  val1:u.title||'', val2:u.detail||'' })),
+                                ...Object.entries(data.score_change||{}).map(([k,v])=>({ topic:k.toUpperCase()+' SCORE', val1:'Draft 1', val2:changeLabel[v]||v }))
                             ]
                         });
-                    }, 800);
+                    } else {
+                        resultsPanel.innerHTML = `
+                            <div class="analysis-report">
+                                <div class="report-badge">API ERROR ${response.status}</div>
+                                <p style="color:#ff5555;font-family:monospace;margin-top:1rem;">${data.error||JSON.stringify(data)}</p>
+                                <p style="color:#888;font-size:0.85rem;margin-top:0.5rem;">Check GROQ_API_KEY in Vercel environment variables.</p>
+                            </div>`;
+                    }
+                } catch (e) {
+                    resultsPanel.innerHTML = `
+                        <div class="analysis-report">
+                            <div class="report-badge">NETWORK ERROR</div>
+                            <p style="color:#ff5555;font-family:monospace;margin-top:1rem;">${e.message}</p>
+                        </div>`;
                 }
             });
         }
