@@ -181,42 +181,27 @@ class HeroVisualizer {
         const cy = this.canvas.height / 2;
         const r  = Math.min(this.canvas.width, this.canvas.height) * 0.30;
 
-        const colorMap = {
-            protagonist: '#ff1100',
-            antagonist:  '#ff6600',
-            supporting:  '#ffaa00',
-            mentioned:   '#00ff66'
-        };
-        const threatMap = {
-            protagonist: 'PATTERN RED',
-            antagonist:  'PATTERN RED',
-            supporting:  'PATTERN ORANGE',
-            mentioned:   'PATTERN GREEN'
-        };
+        const colorMap   = { protagonist:'#ff1100', antagonist:'#ff6600', supporting:'#ffaa00', mentioned:'#00ff66' };
+        const threatMap  = { protagonist:'PATTERN RED', antagonist:'PATTERN RED', supporting:'PATTERN ORANGE', mentioned:'PATTERN GREEN' };
+        const probMap    = { 'Needs Attention':'91.8%', 'Minor Issues':'64.2%', 'Consistent':'42.0%' };
 
         this.nodes = characters.slice(0, 6).map((char, i) => {
-            const angle  = (i / Math.min(characters.length, 6)) * Math.PI * 2 - Math.PI / 2;
-            const role   = (char.role || 'mentioned').toLowerCase();
-            const score  = char.status === 'Needs Attention' ? '91.8%'
-                         : char.status === 'Minor Issues'    ? '64.2%'
-                         : '42.0%';
-
+            const angle = (i / Math.min(characters.length, 6)) * Math.PI * 2 - Math.PI / 2;
+            const role  = (char.role || 'mentioned').toLowerCase();
             return {
                 id:     'SUBJECT ' + String.fromCharCode(65 + i),
                 label:  char.name || 'Unknown',
                 x:      cx + r * Math.cos(angle),
                 y:      cy + r * Math.sin(angle),
                 radius: role === 'protagonist' ? 20 : role === 'antagonist' ? 18 : 14,
-                color:  colorMap[role] || '#ffaa00',
-                prob:   score,
+                color:  colorMap[role]  || '#ffaa00',
+                prob:   probMap[char.status] || '65.0%',
                 threat: threatMap[role] || 'PATTERN ORANGE'
             };
         });
 
-        // Update HUD to show first character
-        if (this.nodes.length > 0) {
-            this.updateHudReadout(this.nodes[0]);
-        }
+        this.selectedNodeIndex = 0;
+        if (this.nodes.length > 0) this.updateHudReadout(this.nodes[0]);
     }
 
     animate() {
@@ -239,7 +224,6 @@ document.addEventListener('DOMContentLoaded', () => {
     window._heroVisualizer = new HeroVisualizer('heroVisualCanvas');
 });
 
-// Global function so patch script and characters engine can call it
 window.updateVisualizerData = function(characters) {
     if (window._heroVisualizer) {
         window._heroVisualizer.updateNodes(characters);
