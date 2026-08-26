@@ -181,9 +181,9 @@ class HeroVisualizer {
         const cy = this.canvas.height / 2;
         const r  = Math.min(this.canvas.width, this.canvas.height) * 0.30;
 
-        const colorMap   = { protagonist:'#ff1100', antagonist:'#ff6600', supporting:'#ffaa00', mentioned:'#00ff66' };
-        const threatMap  = { protagonist:'PATTERN RED', antagonist:'PATTERN RED', supporting:'PATTERN ORANGE', mentioned:'PATTERN GREEN' };
-        const probMap    = { 'Needs Attention':'91.8%', 'Minor Issues':'64.2%', 'Consistent':'42.0%' };
+        const colorMap  = { protagonist:'#ff1100', antagonist:'#ff6600', supporting:'#ffaa00', mentioned:'#00ff66' };
+        const threatMap = { protagonist:'PATTERN RED', antagonist:'PATTERN RED', supporting:'PATTERN ORANGE', mentioned:'PATTERN GREEN' };
+        const probMap   = { 'Needs Attention':'91.8%', 'Minor Issues':'64.2%', 'Consistent':'42.0%' };
 
         this.nodes = characters.slice(0, 6).map((char, i) => {
             const angle = (i / Math.min(characters.length, 6)) * Math.PI * 2 - Math.PI / 2;
