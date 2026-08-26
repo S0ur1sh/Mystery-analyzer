@@ -1,73 +1,111 @@
 export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  if (req.method === 'OPTIONS') return res.status(200).end();
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+
+  // Parse body safely
+  let chapters = [];
+  try {
+    const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
+    // Accept { chapters: [...] } or { text: "..." }
+    if (body?.chapters && Array.isArray(body.chapters)) {
+      chapters = body.chapters.filter(c => c && String(c).trim().length > 20);
+    } else if (body?.text) {
+      chapters = [String(body.text).trim()];
+    }
+  } catch (err) {
+    return res.status(400).json({ error: 'Invalid JSON body: ' + err.message });
   }
 
-  const { chapters } = req.body;
-
-  if (!chapters || !Array.isArray(chapters) || chapters.length < 1) {
-    return res.status(400).json({ error: 'At least one chapter is required.' });
+  if (chapters.length === 0) {
+    return res.status(400).json({ error: 'No valid chapter text provided.' });
   }
 
-  const validChapters = chapters.filter(c => c && c.trim().split(/\s+/).length >= 30);
-  if (validChapters.length === 0) {
-    return res.status(400).json({ error: 'Each chapter needs at least 30 words.' });
+  const apiKey = process.env.GROQ_API_KEY;
+  if (!apiKey) {
+    return res.status(500).json({ error: 'GROQ_API_KEY is not configured in Vercel.' });
   }
 
-  const systemPrompt = `You are a professional fiction editor specializing in character consistency analysis for mystery and thriller novels. Analyze the provided chapter(s) and return ONLY a valid JSON object with this exact structure — no markdown, no explanation, just raw JSON:
+  const chaptersText = chapters.map((ch, i) => `CHAPTER ${i + 1}:\n${ch}`).join('\n\n---\n\n');
+
+  const systemPrompt = `You are a professional fiction editor specializing in mystery and thriller character analysis.
+
+Analyze the provided chapter(s) and return ONLY a valid JSON object matching this exact structure:
 
 {
   "characters": [
     {
-      "name": "character name",
+      "name": "character full name",
       "role": "protagonist/antagonist/supporting/mentioned",
-      "chapters_present": [1, 2],
+      "chapters_present": [1],
       "traits": ["trait1", "trait2", "trait3"],
       "dialogue_style": "brief description of how they speak",
       "inconsistencies": [
-        {"title": "short label", "detail": "specific inconsistency referencing actual text and chapter"}
+        { "title": "short label", "detail": "specific inconsistency referencing actual text" }
       ],
-      "arc_notes": "brief note on character development or lack thereof",
+      "arc_notes": "brief note on character development",
       "status": "Consistent/Minor Issues/Needs Attention"
     }
   ],
   "overall_consistency": "Strong/Good/Fair/Weak",
   "relationship_notes": [
-    {"characters": "Character A & Character B", "note": "observation about their dynamic"}
+    { "characters": "Character A & Character B", "note": "observation about their dynamic" }
   ],
-  "missing_characters": "note any characters mentioned early who disappear without explanation, or 'None'",
+  "missing_characters": "note any characters who disappear without explanation, or None",
   "top_priority": "the single most important character issue to fix"
 }
 
-Identify ALL named characters, even minor ones. For inconsistencies, be very specific — quote or closely paraphrase the contradicting moments. If only one chapter is provided, note what can be assessed vs what requires more chapters.`;
-
-  const chaptersText = validChapters.map((ch, i) => `CHAPTER ${i + 1}:\n${ch}`).join('\n\n---\n\n');
+Rules:
+- Identify ALL named characters, even minor ones.
+- For inconsistencies, quote or closely paraphrase the contradicting moments.
+- Return JSON only — no markdown, no explanation.`;
 
   try {
-    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    const groqResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.GROQ_API_KEY}`
+        'Authorization': `Bearer ${apiKey}`
       },
       body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
-        max_tokens: 2000,
-        temperature: 0.3,
+        model: 'openai/gpt-oss-120b',
         messages: [
           { role: 'system', content: systemPrompt },
-          { role: 'user', content: chaptersText }
-        ]
+          { role: 'user',   content: chaptersText }
+        ],
+        temperature: 0.3,
+        max_tokens: 2000,
+        response_format: { type: 'json_object' }
       })
     });
 
-    const data = await response.json();
-    const raw = data.choices?.[0]?.message?.content || '';
-    const clean = raw.replace(/```json|```/g, '').trim();
-    const result = JSON.parse(clean);
+    const groqData = await groqResponse.json();
+
+    if (!groqResponse.ok) {
+      return res.status(groqResponse.status || 500).json({
+        error: 'Groq API error: ' + (groqData?.error?.message || JSON.stringify(groqData))
+      });
+    }
+
+    const raw = groqData?.choices?.[0]?.message?.content;
+    if (!raw) return res.status(500).json({ error: 'Groq returned empty response.', groq_response: groqData });
+
+    let result;
+    try {
+      result = typeof raw === 'string' ? JSON.parse(raw) : raw;
+    } catch (err) {
+      return res.status(500).json({
+        error: 'Could not parse Groq response as JSON: ' + err.message,
+        raw: typeof raw === 'string' ? raw.slice(0, 500) : raw
+      });
+    }
+
     return res.status(200).json(result);
 
   } catch (err) {
-    return res.status(500).json({ error: err.message || 'Something went wrong.' });
+    return res.status(500).json({ error: 'Server error: ' + err.message });
   }
 }
