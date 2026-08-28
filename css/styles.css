@@ -1321,5 +1321,5 @@ body.tactical-hud {
     flex-shrink: 0;
     position: relative;
     z-index: 10000;
-    /*background: #000;*/
+    background: #000;
 }
