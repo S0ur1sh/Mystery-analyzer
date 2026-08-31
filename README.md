@@ -21,4 +21,6 @@ HTML, CSS, JavaScript, Vercel serverless functions,
 Groq API
 
 ## Live demo
-mystery-analyzer.vercel.app
+https://magi-engine.vercel.app/
+<img width="952" height="506" alt="image" src="https://github.com/user-attachments/assets/df6061af-2112-4395-9c11-27b7fb168841" />
+
